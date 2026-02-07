@@ -259,10 +259,11 @@ const users = await db.user.findMany({
 });
 ```
 
-## 🛡️ Middleware & Auth
+## 🛡️ Proxy & Auth
 
 ```typescript
-// In middleware.ts - routes are automatically protected
+// In proxy.ts (Next.js 16+ convention, formerly middleware.ts)
+// Routes are automatically protected
 // Protected routes: /dashboard/*, /settings/*, /profile/*, /admin/*
 
 // In Server Actions - verify auth

@@ -89,8 +89,8 @@
 - [x] src/components/providers/query-provider.tsx
 - [x] src/components/providers/toast-provider.tsx
 
-### Middleware & API Routes (100%)
-- [x] src/middleware.ts
+### Proxy & API Routes (100%)
+- [x] src/proxy.ts (migrated from middleware.ts for Next.js 16+)
 - [x] src/lib/middleware/rate-limit.ts
 - [x] src/lib/middleware/admin-auth.ts
 - [x] src/app/api/auth/login/route.ts

@@ -1,7 +1,8 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy (formerly Middleware)
  *
  * Handles authentication, rate limiting, and request processing
+ * Note: Migrated from middleware.ts to proxy.ts for Next.js 16+
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -60,9 +61,10 @@ function applyRateLimit(request: NextRequest, pathname: string): NextResponse | 
 }
 
 /**
- * Main middleware function
+ * Main proxy function (Next.js 16+ convention)
+ * Note: Function must be named "proxy" for Next.js 16+
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Apply rate limiting to API routes
@@ -150,7 +152,8 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Middleware configuration
+ * Proxy configuration
+ * Defines which routes this proxy should handle
  */
 export const config = {
   matcher: [
