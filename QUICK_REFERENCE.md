@@ -65,25 +65,25 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 ```bash
 # Development
-pnpm dev              # Start dev server
-pnpm build            # Build for production
-pnpm start            # Start production server
+npm run dev           # Start dev server
+npm run build         # Build for production
+npm start             # Start production server
 
 # Database
-pnpm db:generate      # Generate Prisma Client
-pnpm db:push          # Push schema to database
-pnpm db:studio        # Open Prisma Studio
-pnpm db:migrate       # Run migrations
+npm run db:generate   # Generate Prisma Client
+npm run db:push       # Push schema to database
+npm run db:studio     # Open Prisma Studio
+npm run db:migrate    # Run migrations
 
 # Testing
-pnpm test             # Run unit tests
-pnpm test:e2e         # Run E2E tests
-pnpm test:coverage    # Run with coverage
+npm test              # Run unit tests
+npm run test:e2e      # Run E2E tests
+npm run test:coverage # Run with coverage
 
 # Code Quality
-pnpm lint             # Run ESLint
-pnpm format           # Format with Prettier
-pnpm typecheck        # Check TypeScript
+npm run lint          # Run ESLint
+npm run format        # Format with Prettier
+npm run typecheck     # Check TypeScript
 ```
 
 ## 🚀 Server Actions Reference
@@ -313,26 +313,26 @@ console.log(decodedToken);
 // Use Stripe CLI: stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 // Check database directly
-// Run: pnpm db:studio
+// Run: npm run db:studio
 ```
 
 ## 📱 Mobile Development (Capacitor)
 
 ```bash
 # Initialize Capacitor
-pnpm cap:init
+npm run cap:init
 
 # Add platforms
-pnpm cap:add:ios
-pnpm cap:add:android
+npm run cap:add:ios
+npm run cap:add:android
 
 # Build and sync
-pnpm build:mobile
-pnpm cap:sync
+npm run build:mobile
+npm run cap:sync
 
 # Open in IDE
-pnpm cap:open:ios
-pnpm cap:open:android
+npm run cap:open:ios
+npm run cap:open:android
 ```
 
 ## 🚢 Deployment Checklist

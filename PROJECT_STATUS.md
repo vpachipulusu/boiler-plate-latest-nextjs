@@ -212,10 +212,11 @@ src/__tests__/
 
 ## 📝 Notes
 
-- Using npm instead of pnpm (package.json specifies pnpm@9.15.0 but npm is working)
+- **Package Manager**: Using npm (switched from pnpm due to module resolution issues with Next.js 16 and lucide-react - see [PACKAGE_MANAGER_CHANGE.md](./PACKAGE_MANAGER_CHANGE.md))
 - Tailwind CSS v3.4.19 chosen for stability over v4 beta
 - All test frameworks operational and verified
 - Development server running smoothly
+- Module resolution issues with lucide-react resolved by switching to npm
 - Ready for feature implementation
 
 ---

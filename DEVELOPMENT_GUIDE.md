@@ -1,5 +1,7 @@
 # Development Guide
 
+> **Important**: This project uses **npm** (not pnpm) due to module resolution issues with Next.js 16 and lucide-react. See [PACKAGE_MANAGER_CHANGE.md](./PACKAGE_MANAGER_CHANGE.md) for details.
+
 ## Quick Start Commands
 
 ### Starting Development Server

@@ -227,23 +227,23 @@ Even though some components are not yet implemented, you can:
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your credentials
 
 # Generate Prisma Client
-pnpm db:generate
+npm run db:generate
 
 # Push schema to database
-pnpm db:push
+npm run db:push
 ```
 
 ### 2. Run Development Server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ### 3. Test Existing Features

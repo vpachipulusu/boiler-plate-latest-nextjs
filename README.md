@@ -48,10 +48,12 @@ A production-ready SaaS boilerplate built with Next.js 16, React 19, Prisma, Fir
 ### Prerequisites
 
 - Node.js 20+
-- pnpm 9+
+- npm (comes with Node.js)
 - PostgreSQL database
 - Firebase project
 - Stripe account
+
+> **Note**: This project uses npm instead of pnpm due to better module resolution with Next.js and lucide-react icons.
 
 ### Installation
 
@@ -63,7 +65,7 @@ A production-ready SaaS boilerplate built with Next.js 16, React 19, Prisma, Fir
 
 2. **Install dependencies**
    ```bash
-   pnpm install
+   npm install
    ```
 
 3. **Set up environment variables**
@@ -79,13 +81,13 @@ A production-ready SaaS boilerplate built with Next.js 16, React 19, Prisma, Fir
 
 4. **Set up the database**
    ```bash
-   pnpm db:generate
-   pnpm db:push
+   npm run db:generate
+   npm run db:push
    ```
 
 5. **Run the development server**
    ```bash
-   pnpm dev
+   npm run dev
    ```
 
 6. **Open [http://localhost:3000](http://localhost:3000)**
@@ -120,34 +122,34 @@ src/
 ## Available Scripts
 
 ### Development
-- `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm format` - Format code with Prettier
-- `pnpm typecheck` - Type check with TypeScript
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run typecheck` - Type check with TypeScript
 
 ### Database
-- `pnpm db:generate` - Generate Prisma client
-- `pnpm db:push` - Push schema to database
-- `pnpm db:studio` - Open Prisma Studio
-- `pnpm db:migrate` - Run migrations
-- `pnpm db:seed` - Seed database
+- `npm run db:generate` - Generate Prisma client
+- `npm run db:push` - Push schema to database
+- `npm run db:studio` - Open Prisma Studio
+- `npm run db:migrate` - Run migrations
+- `npm run db:seed` - Seed database
 
 ### Testing
-- `pnpm test` - Run unit tests with Vitest
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm test:coverage` - Run tests with coverage
-- `pnpm test:e2e` - Run E2E tests with Playwright
-- `pnpm test:all` - Run all tests
+- `npm test` - Run unit tests with Vitest
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage
+- `npm run test:e2e` - Run E2E tests with Playwright
+- `npm run test:all` - Run all tests
 
 ### Mobile
-- `pnpm cap:init` - Initialize Capacitor
-- `pnpm cap:sync` - Sync web assets to native projects
-- `pnpm cap:add:ios` - Add iOS platform
-- `pnpm cap:add:android` - Add Android platform
-- `pnpm ios:build` - Build for iOS
-- `pnpm android:build` - Build for Android
+- `npm run cap:init` - Initialize Capacitor
+- `npm run cap:sync` - Sync web assets to native projects
+- `npm run cap:add:ios` - Add iOS platform
+- `npm run cap:add:android` - Add Android platform
+- `npm run ios:build` - Build for iOS
+- `npm run android:build` - Build for Android
 
 ## Firebase Setup
 
@@ -169,29 +171,29 @@ src/
 
 1. Create a PostgreSQL database
 2. Update `DATABASE_URL` in `.env`
-3. Run `pnpm db:push` to create tables
-4. Optionally run `pnpm db:seed` for sample data
+3. Run `npm run db:push` to create tables
+4. Optionally run `npm run db:seed` for sample data
 
 ## Testing
 
 ### Unit Tests
 ```bash
-pnpm test:unit
+npm run test:unit
 ```
 
 ### Integration Tests
 ```bash
-pnpm test:integration
+npm run test:integration
 ```
 
 ### E2E Tests
 ```bash
-pnpm test:e2e
+npm run test:e2e
 ```
 
 ### Coverage Report
 ```bash
-pnpm test:coverage
+npm run test:coverage
 ```
 
 ## Deployment
@@ -216,15 +218,15 @@ This project can be deployed to any platform that supports Next.js:
 
 ### iOS App Store
 
-1. Build the web app: `pnpm build:mobile`
-2. Open Xcode: `pnpm cap:open:ios`
+1. Build the web app: `npm run build:mobile`
+2. Open Xcode: `npm run cap:open:ios`
 3. Configure signing & capabilities
 4. Archive and upload to App Store Connect
 
 ### Google Play Store
 
-1. Build the web app: `pnpm build:mobile`
-2. Open Android Studio: `pnpm cap:open:android`
+1. Build the web app: `npm run build:mobile`
+2. Open Android Studio: `npm run cap:open:android`
 3. Generate signed APK/AAB
 4. Upload to Google Play Console
 

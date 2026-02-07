@@ -45,7 +45,7 @@ This is a production-ready **SaaS Boilerplate** built with modern web technologi
 - **Turbopack** (Fast development builds)
 - **ESLint** (Code linting)
 - **Prettier** (Code formatting with Tailwind plugin)
-- **pnpm** (Package manager - required, not npm or yarn)
+- **npm** (Package manager - not pnpm due to Next.js 16 module resolution issues)
 
 ## Project Structure
 
@@ -367,54 +367,54 @@ Required environment variables (see `.env.example`):
 
 ### Starting Development
 ```bash
-pnpm dev          # Start dev server with Turbopack
-pnpm dev:clean    # Clean cache and start dev server
+npm run dev          # Start dev server with Turbopack
+npm run dev:clean    # Clean cache and start dev server
 ```
 
 ### Code Quality
 ```bash
-pnpm lint         # Run ESLint
-pnpm typecheck    # Type check with TypeScript
-pnpm format       # Format with Prettier
+npm run lint         # Run ESLint
+npm run typecheck    # Type check with TypeScript
+npm run format       # Format with Prettier
 ```
 
 ### Database
 ```bash
-pnpm db:generate  # Generate Prisma client (after schema changes)
-pnpm db:push      # Push schema to database (dev)
-pnpm db:migrate   # Create migrations (production)
-pnpm db:studio    # Open Prisma Studio UI
-pnpm db:seed      # Seed database with test data
+npm run db:generate  # Generate Prisma client (after schema changes)
+npm run db:push      # Push schema to database (dev)
+npm run db:migrate   # Create migrations (production)
+npm run db:studio    # Open Prisma Studio UI
+npm run db:seed      # Seed database with test data
 ```
 
 ### Testing
 ```bash
-pnpm test              # Run unit tests
-pnpm test:watch        # Run tests in watch mode
-pnpm test:coverage     # Run tests with coverage report
-pnpm test:e2e          # Run E2E tests
-pnpm test:all          # Run all tests
+npm test              # Run unit tests
+npm run test:watch        # Run tests in watch mode
+npm run test:coverage     # Run tests with coverage report
+npm run test:e2e          # Run E2E tests
+npm run test:all          # Run all tests
 ```
 
 ### Mobile Development
 ```bash
-pnpm build:mobile      # Build for mobile
-pnpm cap:sync          # Sync web to native projects
-pnpm ios:build         # Build iOS app
-pnpm android:build     # Build Android app
+npm run build:mobile      # Build for mobile
+npm run cap:sync          # Sync web to native projects
+npm run ios:build         # Build iOS app
+npm run android:build     # Build Android app
 ```
 
 ### Building for Production
 ```bash
-pnpm build            # Build Next.js app
-pnpm start            # Start production server
+npm run build            # Build Next.js app
+npm start                # Start production server
 ```
 
 ## Key Implementation Patterns
 
 ### Adding a New Feature
 1. **Plan**: Determine if feature needs Client or Server Component
-2. **Database**: Update Prisma schema if needed, run `pnpm db:generate`
+2. **Database**: Update Prisma schema if needed, run `npm run db:generate`
 3. **Server Actions**: Create actions in `src/app/actions/`
 4. **UI Components**: Build components in `src/components/`
 5. **Routes**: Add pages in `src/app/`
@@ -579,8 +579,8 @@ npx shadcn-ui@latest add [component-name]
 
 ### When Refactoring
 1. Ensure tests pass before and after
-2. Run type check: `pnpm typecheck`
-3. Run linter: `pnpm lint`
+2. Run type check: `npm run typecheck`
+3. Run linter: `npm run lint`
 4. Consider impact on API contracts
 5. Update affected tests
 
@@ -607,14 +607,14 @@ npx shadcn-ui@latest add [component-name]
 ## Deployment Checklist
 
 ### Pre-deployment
-- [ ] All tests passing (`pnpm test:all`)
-- [ ] Type check passing (`pnpm typecheck`)
-- [ ] Lint check passing (`pnpm lint`)
+- [ ] All tests passing (`npm run test:all`)
+- [ ] Type check passing (`npm run typecheck`)
+- [ ] Lint check passing (`npm run lint`)
 - [ ] Environment variables configured on hosting platform
 - [ ] Database migrations applied
 - [ ] Stripe webhooks configured
 - [ ] Firebase production credentials set
-- [ ] Build succeeds locally (`pnpm build`)
+- [ ] Build succeeds locally (`npm run build`)
 
 ### Post-deployment
 - [ ] Test authentication flow
@@ -626,12 +626,12 @@ npx shadcn-ui@latest add [component-name]
 
 ## Package Manager
 
-**IMPORTANT**: This project uses **pnpm** as the package manager, not npm or yarn.
+**IMPORTANT**: This project uses **npm** as the package manager.
 
-- Always use `pnpm install`, not `npm install`
-- The project is configured with `packageManager: "pnpm@9.15.0"`
-- Minimum pnpm version: 9.0.0
-- pnpm is faster and more efficient than npm/yarn
+- Always use `npm install`, not pnpm
+- The project switched from pnpm to npm due to module resolution issues with Next.js 16 and lucide-react
+- See [PACKAGE_MANAGER_CHANGE.md](./PACKAGE_MANAGER_CHANGE.md) for details
+- npm provides better compatibility with Next.js 16 and Turbopack
 
 ## Additional Resources
 

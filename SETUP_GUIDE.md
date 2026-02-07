@@ -7,16 +7,18 @@ This guide will help you set up and run the SaaS boilerplate application.
 Before you begin, ensure you have the following installed:
 
 - **Node.js** v20.0.0 or higher
-- **pnpm** v9.0.0 or higher (run `npm install -g pnpm` to install)
+- **npm** (comes with Node.js)
 - **PostgreSQL** database (local or cloud-hosted)
 - **Firebase** project
 - **Stripe** account
+
+> **Important**: This project uses npm instead of pnpm due to module resolution issues with Next.js 16 and lucide-react. Using pnpm will cause "Module not found" errors.
 
 ## Step 1: Install Dependencies
 
 ```bash
 cd c:\MainData\NewSourceCode\boiler-plate-latest-nextjs
-pnpm install
+npm install
 ```
 
 ## Step 2: Set Up PostgreSQL Database
@@ -154,28 +156,28 @@ NODE_ENV="development"
 
 1. Generate Prisma Client:
 ```bash
-pnpm db:generate
+npm run db:generate
 ```
 
 2. Push schema to database:
 ```bash
-pnpm db:push
+npm run db:push
 ```
 
 3. (Optional) Seed database with sample data:
 ```bash
-pnpm db:seed
+npm run db:seed
 ```
 
 4. (Optional) Open Prisma Studio to view data:
 ```bash
-pnpm db:studio
+npm run db:studio
 ```
 
 ## Step 7: Run the Development Server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -254,9 +256,9 @@ If webhooks don't work:
    - Create server actions in `src/app/actions/`
 
 3. **Set up testing**:
-   - Run tests: `pnpm test`
-   - Run E2E tests: `pnpm test:e2e`
-   - Check coverage: `pnpm test:coverage`
+   - Run tests: `npm test`
+   - Run E2E tests: `npm run test:e2e`
+   - Check coverage: `npm run test:coverage`
 
 4. **Deploy to production**:
    - See deployment guide in README.md
@@ -272,9 +274,9 @@ If you encounter issues:
 
 ## Development Tools
 
-- **Prisma Studio**: `pnpm db:studio` - Visual database editor
-- **TypeScript Check**: `pnpm typecheck` - Check for type errors
-- **Linting**: `pnpm lint` - Check code quality
-- **Formatting**: `pnpm format` - Format code with Prettier
+- **Prisma Studio**: `npm run db:studio` - Visual database editor
+- **TypeScript Check**: `npm run typecheck` - Check for type errors
+- **Linting**: `npm run lint` - Check code quality
+- **Formatting**: `npm run format` - Format code with Prettier
 
 Happy coding! 🚀

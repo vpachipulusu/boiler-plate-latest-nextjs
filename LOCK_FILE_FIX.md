@@ -1,5 +1,7 @@
 # Lock File Issue - Fixed! 🎉
 
+> **Note**: This project now uses **npm** instead of pnpm. See [PACKAGE_MANAGER_CHANGE.md](./PACKAGE_MANAGER_CHANGE.md) for the reason and migration details.
+
 ## Problem Solved
 
 The "Unable to acquire lock" error has been permanently fixed with automatic cleanup scripts.
