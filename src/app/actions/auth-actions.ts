@@ -1,6 +1,6 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
@@ -134,6 +134,13 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
       };
     }
 
+    // Get request headers for login tracking
+    const headersList = await headers();
+    const ipAddress = headersList.get('x-forwarded-for')?.split(',')[0].trim() || 
+                      headersList.get('x-real-ip') || 
+                      'unknown';
+    const userAgent = headersList.get('user-agent') || 'unknown';
+
     // Get or create user in database
     let user = await db.user.findUnique({
       where: { firebaseUid: uid },
@@ -174,6 +181,17 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
         },
       });
     }
+
+    // Record login history
+    await db.loginHistory.create({
+      data: {
+        userId: user.id,
+        ipAddress,
+        userAgent,
+        successful: true,
+        loginAt: new Date(),
+      },
+    });
 
     // Set session cookie
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days

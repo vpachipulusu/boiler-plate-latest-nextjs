@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signUpWithEmail } from "@/lib/firebase/auth-helpers";
+import { verifyTokenAction } from "@/app/actions/auth-actions";
 
 const signupSchema = z
   .object({
@@ -57,7 +58,7 @@ export function SignupForm() {
       setIsLoading(true);
       setError(null);
 
-      const { user, error: signUpError } = await signUpWithEmail(
+      const { user, idToken, error: signUpError } = await signUpWithEmail(
         data.email,
         data.password
       );
@@ -67,8 +68,16 @@ export function SignupForm() {
         return;
       }
 
-      if (user) {
-        // Redirect to verify email page
+      if (user && idToken) {
+        // Create session on server
+        const result = await verifyTokenAction(idToken);
+        
+        if (!result.success) {
+          setError(result.error || "Failed to create session. Please try again.");
+          return;
+        }
+        
+        // Redirect to verify email page or dashboard
         router.push("/verify-email");
       }
     } catch (error) {

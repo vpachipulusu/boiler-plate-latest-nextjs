@@ -69,15 +69,24 @@ A production-ready SaaS boilerplate built with Next.js 16, React 19, Prisma, Fir
    ```
 
 3. **Set up environment variables**
+   
+   Create both `.env` (for Prisma) and `.env.local` (for Next.js):
+   
    ```bash
    cp .env.example .env
+   cp .env.example .env.local
    ```
 
-   Fill in your environment variables:
-   - Database URL
+   Fill in your environment variables in **both files**:
+   - Database URL (required for Prisma to work)
    - Firebase credentials (client & admin)
    - Stripe keys
    - Other configuration
+   
+   > ℹ️ **Why two files?**
+   > - `.env` - Used by Prisma CLI for database operations
+   > - `.env.local` - Used by Next.js at runtime
+   > - Both files need the same `DATABASE_URL` value
 
 4. **Set up the database**
    ```bash
@@ -85,12 +94,23 @@ A production-ready SaaS boilerplate built with Next.js 16, React 19, Prisma, Fir
    npm run db:push
    ```
 
-5. **Run the development server**
+5. **Configure Firebase Authentication** 🔥
+   
+   **⚠️ IMPORTANT**: Enable OAuth providers to avoid `auth/configuration-not-found` errors
+   
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Select your project → **Authentication** → **Sign-in method**
+   - Enable **Google** provider (required for OAuth)
+   - Enable **GitHub** provider (optional)
+   
+   > 📖 See [FIREBASE_OAUTH_SETUP.md](FIREBASE_OAUTH_SETUP.md) for step-by-step instructions
+
+6. **Run the development server**
    ```bash
    npm run dev
    ```
 
-6. **Open [http://localhost:3000](http://localhost:3000)**
+7. **Open [http://localhost:3000](http://localhost:3000)**
 
 ## Project Structure
 
@@ -229,6 +249,60 @@ This project can be deployed to any platform that supports Next.js:
 2. Open Android Studio: `npm run cap:open:android`
 3. Generate signed APK/AAB
 4. Upload to Google Play Console
+
+## Troubleshooting
+
+### Firebase OAuth Errors
+
+**Error: `auth/configuration-not-found`**
+
+This error occurs when OAuth providers are not enabled in Firebase Console.
+
+**Solution:**
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Navigate to **Authentication** → **Sign-in method**
+3. Enable **Google** and/or **GitHub** providers
+4. See [FIREBASE_OAUTH_SETUP.md](FIREBASE_OAUTH_SETUP.md) for detailed setup
+
+**Quick Links:**
+- Your Firebase project: `https://console.firebase.google.com/project/YOUR_PROJECT_ID/authentication/providers`
+- [Complete OAuth Setup Guide](FIREBASE_OAUTH_SETUP.md)
+
+### Database Errors
+
+**Error: `Environment variable not found: DATABASE_URL`**
+
+This occurs when running Prisma commands without a `.env` file.
+
+**Solution:**
+1. Create `.env` file: `cp .env.example .env`
+2. Add your database URL to both `.env` and `.env.local`
+3. Run `npm run db:push` again
+
+**Why this happens:**
+- Prisma CLI reads `.env` file
+- Next.js reads `.env.local` file
+- You need both files with the same `DATABASE_URL`
+
+### Module Resolution Errors
+
+**Error: `Module not found: lucide-react`**
+
+This occurs when using pnpm instead of npm.
+
+**Solution:**
+- Use npm instead of pnpm: `npm install`
+- See [PACKAGE_MANAGER_CHANGE.md](PACKAGE_MANAGER_CHANGE.md) for details
+
+### Turbopack Cache Issues
+
+**Error: Turbopack panics or cache corruption**
+
+**Solution:**
+1. Kill all Node processes: `npm run dev:kill`
+2. Clear cache: `Remove-Item -Path .next -Recurse -Force` (Windows) or `rm -rf .next` (Mac/Linux)
+3. Use webpack instead: `npm run dev` (Turbopack disabled by default)
+4. See [TURBOPACK_ISSUES.md](TURBOPACK_ISSUES.md) for details
 
 ## Environment Variables
 

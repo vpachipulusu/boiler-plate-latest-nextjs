@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signInWithEmail } from "@/lib/firebase/auth-helpers";
+import { verifyTokenAction } from "@/app/actions/auth-actions";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -43,7 +44,7 @@ export function LoginForm() {
       setIsLoading(true);
       setError(null);
 
-      const { user, error: signInError } = await signInWithEmail(
+      const { user, idToken, error: signInError } = await signInWithEmail(
         data.email,
         data.password
       );
@@ -53,7 +54,15 @@ export function LoginForm() {
         return;
       }
 
-      if (user) {
+      if (user && idToken) {
+        // Create session on server
+        const result = await verifyTokenAction(idToken);
+        
+        if (!result.success) {
+          setError(result.error || "Failed to create session. Please try again.");
+          return;
+        }
+        
         router.push("/dashboard");
         router.refresh();
       }

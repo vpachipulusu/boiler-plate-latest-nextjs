@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "predev": "node scripts/dev-clean.cjs",
-    "dev": "next dev --turbo",
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbo",
     "dev:clean": "node scripts/dev-clean.cjs && npm run dev",
     "dev:kill": "node scripts/dev-kill.cjs",
     "build": "next build",

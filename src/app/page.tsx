@@ -39,7 +39,7 @@ export default function HomePage() {
         </p>
         <div className="flex w-full items-center justify-center space-x-4 py-4 md:pb-10">
           <Button size="lg" asChild>
-            <Link href="/auth/login">
+            <Link href="/login">
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -183,7 +183,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="flex justify-center">
             <Button size="lg" asChild>
-              <Link href="/auth/register">
+              <Link href="/signup">
                 Create an Account
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

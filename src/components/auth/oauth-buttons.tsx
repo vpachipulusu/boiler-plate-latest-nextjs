@@ -3,29 +3,72 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signInWithGoogle, signInWithGitHub } from "@/lib/firebase/auth-helpers";
+import { verifyTokenAction } from "@/app/actions/auth-actions";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export function OAuthButtons() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
-      const { user, error } = await signInWithGoogle();
+      const { user, idToken, error } = await signInWithGoogle();
 
       if (error) {
         console.error("Google sign-in error:", error);
+        
+        // Check if it's a configuration error
+        if (error.includes("configuration-not-found") || error.includes("auth/configuration-not-found")) {
+          toast({
+            title: "Google Sign-In Not Configured",
+            description: "Google authentication is not enabled. Please enable Google Sign-In in your Firebase Console under Authentication > Sign-in method.",
+            variant: "destructive",
+          });
+        } else if (error.includes("popup-closed-by-user")) {
+          // User closed the popup, no need to show error
+          return;
+        } else {
+          toast({
+            title: "Sign-in Failed",
+            description: error || "Failed to sign in with Google. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
-      if (user) {
+      if (user && idToken) {
+        // Create session on server
+        const result = await verifyTokenAction(idToken);
+        
+        if (!result.success) {
+          toast({
+            title: "Authentication Failed",
+            description: result.error || "Failed to create session. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        toast({
+          title: "Success",
+          description: "Signed in successfully!",
+        });
+        
         router.push("/dashboard");
         router.refresh();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign-in error:", error);
+      toast({
+        title: "Sign-in Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -34,19 +77,59 @@ export function OAuthButtons() {
   const handleGitHubSignIn = async () => {
     try {
       setIsGitHubLoading(true);
-      const { user, error } = await signInWithGitHub();
+      const { user, idToken, error } = await signInWithGitHub();
 
       if (error) {
         console.error("GitHub sign-in error:", error);
+        
+        // Check if it's a configuration error
+        if (error.includes("configuration-not-found") || error.includes("auth/configuration-not-found")) {
+          toast({
+            title: "GitHub Sign-In Not Configured",
+            description: "GitHub authentication is not enabled. Please enable GitHub Sign-In in your Firebase Console under Authentication > Sign-in method.",
+            variant: "destructive",
+          });
+        } else if (error.includes("popup-closed-by-user")) {
+          // User closed the popup, no need to show error
+          return;
+        } else {
+          toast({
+            title: "Sign-in Failed",
+            description: error || "Failed to sign in with GitHub. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
-      if (user) {
+      if (user && idToken) {
+        // Create session on server
+        const result = await verifyTokenAction(idToken);
+        
+        if (!result.success) {
+          toast({
+            title: "Authentication Failed",
+            description: result.error || "Failed to create session. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        toast({
+          title: "Success",
+          description: "Signed in successfully!",
+        });
+        
         router.push("/dashboard");
         router.refresh();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("GitHub sign-in error:", error);
+      toast({
+        title: "Sign-in Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGitHubLoading(false);
     }
