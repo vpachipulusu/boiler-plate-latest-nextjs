@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(ls:*)",
+      "Bash(npm view:*)",
+      "Bash(timeout:*)",
+      "Bash(taskkill:*)",
+      "Bash(if exist \".next\\\\dev\\\\lock\" del /F \".next\\\\dev\\\\lock\")",
+      "Bash(curl:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx next:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run test:integration:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run dev:kill:*)"
+    ]
+  }
+}
