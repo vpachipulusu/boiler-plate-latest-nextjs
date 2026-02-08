@@ -134,6 +134,7 @@ export default function RootLayout({
           inter.variable,
           "min-h-screen bg-background font-sans antialiased"
         )}
+        suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
