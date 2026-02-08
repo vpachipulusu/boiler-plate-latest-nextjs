@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "predev": "node scripts/dev-clean.cjs",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "dev:turbo": "next dev --turbo",
     "dev:clean": "node scripts/dev-clean.cjs && npm run dev",
     "dev:kill": "node scripts/dev-kill.cjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "build:mobile": "next build && npx cap sync",
     "start": "next start",
     "lint": "next lint",
