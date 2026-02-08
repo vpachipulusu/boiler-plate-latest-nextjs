@@ -7,14 +7,25 @@
 import Stripe from 'stripe';
 import { db } from '@/lib/db/client';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined');
-}
+let stripeInstance: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
-  typescript: true,
-});
+/**
+ * Get or create Stripe client instance (lazy initialization)
+ */
+function getStripeClient(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not defined. Please add it to your .env file.');
+  }
+
+  if (!stripeInstance) {
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-11-20.acacia',
+      typescript: true,
+    });
+  }
+
+  return stripeInstance;
+}
 
 export interface CreateSubscriptionParams {
   userId: string;
@@ -47,7 +58,7 @@ export async function createCheckoutSession(
     stripeCustomerId = user.stripeCustomerId;
   } else {
     // Create new Stripe customer
-    const customer = await stripe.customers.create({
+    const customer = await getStripeClient().customers.create({
       email,
       metadata: { userId },
     });
@@ -62,7 +73,7 @@ export async function createCheckoutSession(
   }
 
   // Create checkout session
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripeClient().checkout.sessions.create({
     customer: stripeCustomerId,
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -97,7 +108,7 @@ export async function createBillingPortalSession(
     throw new Error('No Stripe customer found for user');
   }
 
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripeClient().billingPortal.sessions.create({
     customer: user.stripeCustomerId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
   });
@@ -123,12 +134,10 @@ export async function updateSubscription(
   }
 
   // Get current subscription
-  const subscription = await stripe.subscriptions.retrieve(
-    user.stripeSubscriptionId
-  );
+  const subscription = await getStripeClient().subscriptions.retrieve(user.stripeSubscriptionId);
 
   // Update subscription with new price
-  const updatedSubscription = await stripe.subscriptions.update(
+  const updatedSubscription = await getStripeClient().subscriptions.update(
     user.stripeSubscriptionId,
     {
       items: [
@@ -173,7 +182,7 @@ export async function cancelSubscription(
 
   if (immediately) {
     // Cancel immediately
-    subscription = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+    subscription = await getStripeClient().subscriptions.cancel(user.stripeSubscriptionId);
 
     // Update database
     await db.user.update({
@@ -185,7 +194,7 @@ export async function cancelSubscription(
     });
   } else {
     // Cancel at period end
-    subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    subscription = await getStripeClient().subscriptions.update(user.stripeSubscriptionId, {
       cancel_at_period_end: true,
     });
 
@@ -214,7 +223,7 @@ export async function resumeSubscription(userId: string): Promise<Stripe.Subscri
     throw new Error('No subscription found');
   }
 
-  const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+  const subscription = await getStripeClient().subscriptions.update(user.stripeSubscriptionId, {
     cancel_at_period_end: false,
   });
 
@@ -232,9 +241,7 @@ export async function resumeSubscription(userId: string): Promise<Stripe.Subscri
 /**
  * Get subscription details
  */
-export async function getSubscription(
-  userId: string
-): Promise<Stripe.Subscription | null> {
+export async function getSubscription(userId: string): Promise<Stripe.Subscription | null> {
   const user = await db.user.findUnique({
     where: { id: userId },
     select: { stripeSubscriptionId: true },
@@ -244,7 +251,7 @@ export async function getSubscription(
     return null;
   }
 
-  return stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+  return getStripeClient().subscriptions.retrieve(user.stripeSubscriptionId);
 }
 
 /**
@@ -293,4 +300,4 @@ export async function syncSubscriptionStatus(userId: string): Promise<void> {
   });
 }
 
-export { stripe };
+export { getStripeClient as stripe };

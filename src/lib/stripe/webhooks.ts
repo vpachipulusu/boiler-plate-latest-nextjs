@@ -9,27 +9,35 @@ import { db } from '@/lib/db/client';
 import { getSubscriptionTier } from './subscriptions';
 import { notifySubscriptionChanged, notifyPaymentFailed } from '@/lib/utils/notifications';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined');
-}
+let stripeInstance: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
-  typescript: true,
-});
+/**
+ * Get or create Stripe client instance (lazy initialization)
+ */
+function getStripeClient(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not defined. Please add it to your .env file.');
+  }
+
+  if (!stripeInstance) {
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-11-20.acacia',
+      typescript: true,
+    });
+  }
+
+  return stripeInstance;
+}
 
 /**
  * Verify webhook signature
  */
-export function verifyWebhookSignature(
-  payload: string | Buffer,
-  signature: string
-): Stripe.Event {
+export function verifyWebhookSignature(payload: string | Buffer, signature: string): Stripe.Event {
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     throw new Error('STRIPE_WEBHOOK_SECRET is not defined');
   }
 
-  return stripe.webhooks.constructEvent(
+  return getStripeClient().webhooks.constructEvent(
     payload,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET
@@ -39,9 +47,7 @@ export function verifyWebhookSignature(
 /**
  * Handle checkout session completed
  */
-async function handleCheckoutSessionCompleted(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const userId = session.metadata?.userId;
 
   if (!userId) {
@@ -57,7 +63,7 @@ async function handleCheckoutSessionCompleted(
   }
 
   // Retrieve subscription details
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
   const priceId = subscription.items.data[0]?.price.id;
 
   // Update user in database
@@ -93,9 +99,7 @@ async function handleCheckoutSessionCompleted(
 /**
  * Handle subscription updated
  */
-async function handleSubscriptionUpdated(
-  subscription: Stripe.Subscription
-): Promise<void> {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
   const userId = subscription.metadata?.userId;
 
   // Find user by Stripe customer ID if userId not in metadata
@@ -147,9 +151,7 @@ async function handleSubscriptionUpdated(
 /**
  * Handle subscription deleted/canceled
  */
-async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription
-): Promise<void> {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   const user = await db.user.findUnique({
     where: { stripeCustomerId: subscription.customer as string },
   });
@@ -192,9 +194,7 @@ async function handleSubscriptionDeleted(
 /**
  * Handle invoice payment succeeded
  */
-async function handleInvoicePaymentSucceeded(
-  invoice: Stripe.Invoice
-): Promise<void> {
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId = invoice.subscription as string;
 
   if (!subscriptionId) {
@@ -211,7 +211,7 @@ async function handleInvoicePaymentSucceeded(
   }
 
   // Retrieve subscription to get current period end
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
 
   // Update user with new period end
   await db.user.update({
@@ -242,9 +242,7 @@ async function handleInvoicePaymentSucceeded(
 /**
  * Handle invoice payment failed
  */
-async function handleInvoicePaymentFailed(
-  invoice: Stripe.Invoice
-): Promise<void> {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId = invoice.subscription as string;
 
   if (!subscriptionId) {
@@ -332,9 +330,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(
-          event.data.object as Stripe.Checkout.Session
-        );
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
         break;
 
       case 'customer.subscription.created':
@@ -355,9 +351,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
         break;
 
       case 'customer.subscription.trial_will_end':
-        await handleCustomerSubscriptionTrialWillEnd(
-          event.data.object as Stripe.Subscription
-        );
+        await handleCustomerSubscriptionTrialWillEnd(event.data.object as Stripe.Subscription);
         break;
 
       default:
