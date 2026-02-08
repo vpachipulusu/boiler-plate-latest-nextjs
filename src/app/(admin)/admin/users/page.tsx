@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Search, Download } from 'lucide-react';
+import { MoreHorizontal, Search, Download, Eye, Edit, Ban } from 'lucide-react';
 import Link from 'next/link';
 
 async function getUsers(searchQuery?: string) {
@@ -44,8 +44,13 @@ async function getUsers(searchQuery?: string) {
   return users;
 }
 
-export default async function AdminUsersPage({ searchParams }: { searchParams: { q?: string } }) {
-  const users = await getUsers(searchParams.q);
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  const users = await getUsers(params.q);
 
   return (
     <div className="space-y-6">
@@ -66,7 +71,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: {
                 placeholder="Search users by email or name..."
                 className="pl-10"
                 name="q"
-                defaultValue={searchParams.q}
+                defaultValue={params.q}
               />
             </div>
             <Button variant="outline">
@@ -131,18 +136,27 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-accent">
+                          <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/users/${user.id}`}>View Details</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Edit User</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/users/${user.id}`} className="flex items-center">
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit User
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                          <Ban className="mr-2 h-4 w-4" />
                           Suspend User
                         </DropdownMenuItem>
                       </DropdownMenuContent>

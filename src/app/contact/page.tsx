@@ -10,8 +10,13 @@ export const metadata = {
   description: 'Get in touch with our team',
 };
 
-export default function ContactPage({ searchParams }: { searchParams: { plan?: string } }) {
-  const selectedPlan = searchParams.plan;
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const params = await searchParams;
+  const selectedPlan = params.plan;
 
   return (
     <div className="min-h-screen px-4 py-12">

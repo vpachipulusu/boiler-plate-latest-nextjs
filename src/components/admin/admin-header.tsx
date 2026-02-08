@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutDashboard } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,34 +32,40 @@ export function AdminHeader({ user, adminRole }: AdminHeaderProps) {
 
   return (
     <div className="ml-auto flex items-center gap-4">
-      <Badge variant="secondary" className="capitalize">
+      <Badge variant="secondary" className="font-medium capitalize">
         {adminRole.replace('_', ' ')}
       </Badge>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent">
+            <Avatar className="h-10 w-10 ring-2 ring-transparent transition-all hover:ring-ring">
               <AvatarImage src={user.avatarUrl || undefined} />
               <AvatarFallback>{user.displayName?.charAt(0) || user.email.charAt(0)}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium">{user.displayName || 'Admin'}</p>
+            <div className="flex flex-col space-y-1.5 py-1">
+              <p className="text-sm font-semibold">{user.displayName || 'Admin'}</p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/dashboard" className="cursor-pointer">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Back to Dashboard</span>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="cursor-pointer text-destructive focus:text-destructive"
+          >
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            <span>Logout</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

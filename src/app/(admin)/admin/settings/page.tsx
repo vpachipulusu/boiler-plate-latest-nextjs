@@ -3,10 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/lib/db/client';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { GeneralSettingsForm } from '@/components/admin/general-settings-form';
+import { FeatureFlagsList } from '@/components/admin/feature-flags-list';
 
 async function getSettings() {
   const generalSettings = await db.appSettings.findMany({
@@ -21,8 +20,14 @@ async function getSettings() {
     orderBy: { name: 'asc' },
   });
 
+  // Convert generalSettings to key-value object
+  const settingsObject: Record<string, any> = {};
+  generalSettings.forEach((setting: { key: string; value: any }) => {
+    settingsObject[setting.key] = setting.value;
+  });
+
   return {
-    generalSettings,
+    generalSettings: settingsObject,
     featureFlags,
     emailTemplates,
   };
@@ -50,69 +55,12 @@ export default async function AdminSettingsPage() {
 
         {/* General Settings */}
         <TabsContent value="general" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>Configure basic application settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="app-name">Application Name</Label>
-                <Input
-                  id="app-name"
-                  placeholder="SaaS Boilerplate"
-                  defaultValue="SaaS Boilerplate"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="support-email">Support Email</Label>
-                <Input id="support-email" type="email" placeholder="support@example.com" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Default Timezone</Label>
-                <Input id="timezone" defaultValue="UTC" />
-              </div>
-
-              <Button>Save Changes</Button>
-            </CardContent>
-          </Card>
+          <GeneralSettingsForm initialSettings={settings.generalSettings} />
         </TabsContent>
 
         {/* Feature Flags */}
         <TabsContent value="features" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Feature Flags</CardTitle>
-              <CardDescription>Enable or disable features across the platform</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {settings.featureFlags.length > 0 ? (
-                settings.featureFlags.map((flag: any) => (
-                  <div
-                    key={flag.id}
-                    className="flex items-center justify-between rounded-lg border p-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{flag.name}</p>
-                        {flag.enabled && <Badge variant="default">Enabled</Badge>}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {flag.description || 'No description'}
-                      </p>
-                    </div>
-                    <Switch checked={flag.enabled} />
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  No feature flags configured
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <FeatureFlagsList flags={settings.featureFlags} />
         </TabsContent>
 
         {/* Email Templates */}

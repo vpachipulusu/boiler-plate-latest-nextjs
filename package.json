@@ -26,6 +26,7 @@
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:settings": "node scripts/seed-settings.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "typecheck": "tsc --noEmit",
     "cap:init": "npx cap init",

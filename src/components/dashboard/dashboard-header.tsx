@@ -33,10 +33,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   return (
     <div className="flex items-center gap-4">
       {/* Notifications */}
-      <Button variant="ghost" size="icon" className="relative">
+      <Button variant="ghost" size="icon" className="relative hover:bg-accent">
         <Bell className="h-5 w-5" />
         {user.unreadNotificationCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-lg">
             {user.unreadNotificationCount > 9 ? '9+' : user.unreadNotificationCount}
           </span>
         )}
@@ -45,8 +45,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       {/* User Menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent">
+            <Avatar className="h-10 w-10 ring-2 ring-transparent transition-all hover:ring-ring">
               <AvatarImage
                 src={user.dbAvatarUrl || user.picture || undefined}
                 alt={user.email || 'User'}
@@ -57,8 +57,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.dbDisplayName || 'User'}</p>
+            <div className="flex flex-col space-y-1.5 py-1">
+              <p className="text-sm font-semibold leading-none">{user.dbDisplayName || 'User'}</p>
               <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
             </div>
           </DropdownMenuLabel>
@@ -66,25 +66,28 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <DropdownMenuItem asChild>
             <Link href="/dashboard" className="cursor-pointer">
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
+              <span>Dashboard</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/profile" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
-              Profile
+              <span>Profile</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/security" className="cursor-pointer">
               <Shield className="mr-2 h-4 w-4" />
-              Security
+              <span>Security</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="cursor-pointer text-destructive focus:text-destructive"
+          >
             <LogOut className="mr-2 h-4 w-4" />
-            Log out
+            <span>Log out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
