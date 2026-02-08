@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { profileUpdateSchema, userSettingsSchema } from '@/lib/utils/validation';
+import { cancelSubscription } from '@/lib/stripe/subscriptions';
+import { notifyPasswordChanged } from '@/lib/utils/notifications';
+import { generateTOTPSecret, verifyTOTPToken } from '@/lib/utils/totp';
 
 /**
  * Response type for user actions
@@ -490,6 +493,7 @@ export async function getUserLoginHistoryAction(
 
 /**
  * Change user password
+ * Verifies current password before allowing the change
  */
 export async function changePasswordAction(
   currentPassword: string,
@@ -501,6 +505,14 @@ export async function changePasswordAction(
       return {
         success: false,
         error: 'Unauthorized',
+      };
+    }
+
+    // Validate new password (minimum 8 characters)
+    if (!newPassword || newPassword.length < 8) {
+      return {
+        success: false,
+        error: 'New password must be at least 8 characters long',
       };
     }
 
@@ -516,12 +528,42 @@ export async function changePasswordAction(
       };
     }
 
+    // Verify current password via Firebase REST API
+    const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    if (!apiKey) {
+      return {
+        success: false,
+        error: 'Server configuration error',
+      };
+    }
+
+    const verifyResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          password: currentPassword,
+          returnSecureToken: false,
+        }),
+      }
+    );
+
+    if (!verifyResponse.ok) {
+      return {
+        success: false,
+        error: 'Current password is incorrect',
+      };
+    }
+
     // Update password in Firebase Auth
-    // Note: This requires the user to re-authenticate first in production
-    // For now, we'll update the password directly
     await adminAuth.updateUser(user.firebaseUid, {
       password: newPassword,
     });
+
+    // Notify user about password change
+    await notifyPasswordChanged(userId);
 
     return {
       success: true,
@@ -681,6 +723,16 @@ export async function deleteAccountAction(): Promise<UserActionResponse> {
       };
     }
 
+    // Cancel Stripe subscription if exists
+    if (user.stripeSubscriptionId) {
+      try {
+        await cancelSubscription(user.id, true);
+      } catch (stripeError) {
+        console.error('Failed to cancel Stripe subscription during account deletion:', stripeError);
+        // Continue with deletion even if Stripe cancellation fails
+      }
+    }
+
     // Delete from Firebase Auth
     await adminAuth.deleteUser(user.firebaseUid);
 
@@ -692,6 +744,7 @@ export async function deleteAccountAction(): Promise<UserActionResponse> {
     // Clear session
     const cookieStore = await cookies();
     cookieStore.delete('session');
+    cookieStore.delete('email-verified');
 
     return {
       success: true,
@@ -711,4 +764,87 @@ export async function deleteAccountAction(): Promise<UserActionResponse> {
  */
 export async function deleteUserAccountAction(): Promise<UserActionResponse> {
   return deleteAccountAction();
+}
+
+/**
+ * Initialize 2FA setup - generates a TOTP secret and returns the URI
+ */
+export async function initiate2FASetupAction(): Promise<UserActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) return { success: false, error: 'User not found' };
+    if (user.twoFactorEnabled) return { success: false, error: '2FA is already enabled' };
+
+    const { secret, uri } = generateTOTPSecret(user.email);
+
+    // Store the secret (will be confirmed in verify step)
+    await db.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: secret },
+    });
+
+    return { success: true, data: { uri, secret } };
+  } catch (error: any) {
+    console.error('Initiate 2FA setup error:', error);
+    return { success: false, error: error.message || 'Failed to initiate 2FA setup' };
+  }
+}
+
+/**
+ * Verify and enable 2FA
+ */
+export async function verify2FASetupAction(token: string): Promise<UserActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorSecret) {
+      return { success: false, error: '2FA setup not initiated' };
+    }
+
+    const isValid = verifyTOTPToken(token, user.twoFactorSecret);
+    if (!isValid) return { success: false, error: 'Invalid verification code' };
+
+    await db.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true },
+    });
+
+    return { success: true, data: { message: '2FA enabled successfully' } };
+  } catch (error: any) {
+    console.error('Verify 2FA setup error:', error);
+    return { success: false, error: error.message || 'Failed to verify 2FA setup' };
+  }
+}
+
+/**
+ * Disable 2FA (requires valid TOTP token to confirm)
+ */
+export async function disable2FAAction(token: string): Promise<UserActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      return { success: false, error: '2FA is not enabled' };
+    }
+
+    const isValid = verifyTOTPToken(token, user.twoFactorSecret);
+    if (!isValid) return { success: false, error: 'Invalid verification code' };
+
+    await db.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: false, twoFactorSecret: null },
+    });
+
+    return { success: true, data: { message: '2FA disabled successfully' } };
+  } catch (error: any) {
+    console.error('Disable 2FA error:', error);
+    return { success: false, error: error.message || 'Failed to disable 2FA' };
+  }
 }

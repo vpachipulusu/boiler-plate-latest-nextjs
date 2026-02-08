@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
+import { db } from "@/lib/db/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SessionProvider } from "@/components/providers/session-provider";
 
 export const metadata = {
   title: "Dashboard",
@@ -40,7 +42,26 @@ async function getUser() {
       sessionCookie,
       true
     );
-    return decodedClaims;
+
+    // Get user from database for additional data
+    const dbUser = await db.user.findUnique({
+      where: { firebaseUid: decodedClaims.uid },
+      select: { id: true, displayName: true, avatarUrl: true },
+    });
+
+    // Get unread notification count
+    const unreadNotificationCount = dbUser
+      ? await db.notification.count({
+          where: { userId: dbUser.id, read: false },
+        })
+      : 0;
+
+    return {
+      ...decodedClaims,
+      dbDisplayName: dbUser?.displayName,
+      dbAvatarUrl: dbUser?.avatarUrl,
+      unreadNotificationCount,
+    };
   } catch (error) {
     return null;
   }
@@ -102,9 +123,11 @@ export default async function DashboardLayout({
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                3
-              </span>
+              {user.unreadNotificationCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {user.unreadNotificationCount > 9 ? '9+' : user.unreadNotificationCount}
+                </span>
+              )}
             </Button>
 
             {/* User Menu */}
@@ -116,7 +139,7 @@ export default async function DashboardLayout({
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarImage
-                      src={user.picture}
+                      src={user.dbAvatarUrl || user.picture}
                       alt={user.email || "User"}
                     />
                     <AvatarFallback>
@@ -129,7 +152,7 @@ export default async function DashboardLayout({
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user.name || "User"}
+                      {user.dbDisplayName || "User"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
@@ -178,9 +201,11 @@ export default async function DashboardLayout({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        <div className="container py-6">{children}</div>
-      </main>
+      <SessionProvider>
+        <main className="flex-1">
+          <div className="container py-6">{children}</div>
+        </main>
+      </SessionProvider>
     </div>
   );
 }

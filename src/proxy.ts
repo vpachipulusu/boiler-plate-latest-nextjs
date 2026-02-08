@@ -83,7 +83,7 @@ export async function proxy(request: NextRequest) {
 
   if (isProtectedRoute) {
     // Check for authentication cookie or session
-    const authToken = request.cookies.get('auth-token');
+    const authToken = request.cookies.get('session');
 
     if (!authToken) {
       // Redirect to login if not authenticated
@@ -91,13 +91,20 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
+
+    // Enforce email verification for protected routes
+    const emailVerified = request.cookies.get('email-verified')?.value;
+    if (emailVerified === 'false') {
+      const verifyUrl = new URL('/verify-email', request.url);
+      return NextResponse.redirect(verifyUrl);
+    }
   }
 
   // Admin routes
   const isAdminRoute = pathname.startsWith('/admin');
 
   if (isAdminRoute) {
-    const authToken = request.cookies.get('auth-token');
+    const authToken = request.cookies.get('session');
 
     if (!authToken) {
       const loginUrl = new URL('/login', request.url);
@@ -121,7 +128,7 @@ export async function proxy(request: NextRequest) {
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       // Check for cookie-based auth as fallback
-      const authToken = request.cookies.get('auth-token');
+      const authToken = request.cookies.get('session');
 
       if (!authToken) {
         return NextResponse.json(

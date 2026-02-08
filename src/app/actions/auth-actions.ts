@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { emailSchema, passwordSchema } from '@/lib/utils/validation';
+import { getLocationFromIP } from '@/lib/utils/geo-ip';
+import { notifyNewDeviceLogin, notifyEmailVerified } from '@/lib/utils/notifications';
 
 /**
  * Response type for auth actions
@@ -98,12 +100,27 @@ export async function signUpAction(
 }
 
 /**
- * Logout action - clears session cookie
+ * Logout action - revokes Firebase tokens and clears session cookie
  */
 export async function logoutAction(): Promise<AuthActionResponse> {
   try {
     const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
+
+    if (sessionCookie) {
+      try {
+        // Verify session to get Firebase UID (don't check revocation)
+        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, false);
+        // Revoke all refresh tokens for this user
+        await adminAuth.revokeRefreshTokens(decodedClaims.uid);
+      } catch (error) {
+        // Session may be expired/invalid, still proceed with cookie deletion
+        console.error('Token revocation during logout failed:', error);
+      }
+    }
+
     cookieStore.delete('session');
+    cookieStore.delete('email-verified');
 
     return {
       success: true,
@@ -172,6 +189,11 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
         },
       });
     } else {
+      // Notify if email was just verified
+      if (email_verified && !user.emailVerified) {
+        await notifyEmailVerified(user.id);
+      }
+
       // Update last login
       await db.user.update({
         where: { id: user.id },
@@ -182,12 +204,26 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
       });
     }
 
+    // Get location from IP address
+    const location = await getLocationFromIP(ipAddress);
+
+    // Check if this is a new device (no previous login with same userAgent)
+    if (userAgent) {
+      const previousLogin = await db.loginHistory.findFirst({
+        where: { userId: user.id, userAgent },
+      });
+      if (!previousLogin) {
+        await notifyNewDeviceLogin(user.id, ipAddress);
+      }
+    }
+
     // Record login history
     await db.loginHistory.create({
       data: {
         userId: user.id,
         ipAddress,
         userAgent,
+        location,
         successful: true,
         loginAt: new Date(),
       },
@@ -201,6 +237,15 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
     cookieStore.set('session', sessionCookie, {
       maxAge: expiresIn,
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    // Set email verification status cookie (readable by proxy for enforcement)
+    cookieStore.set('email-verified', email_verified ? 'true' : 'false', {
+      maxAge: expiresIn,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

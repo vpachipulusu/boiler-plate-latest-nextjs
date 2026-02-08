@@ -26,6 +26,10 @@ model User {
   website       String?
   phoneNumber   String?
 
+  // Two-Factor Authentication
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+
   // Subscription
   stripeCustomerId       String?   @unique
   stripeSubscriptionId   String?   @unique

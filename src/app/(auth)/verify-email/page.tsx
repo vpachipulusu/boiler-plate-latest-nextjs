@@ -15,6 +15,7 @@ import {
 import { auth } from "@/lib/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
 import { resendVerificationEmail } from "@/lib/firebase/auth-helpers";
+import { verifyTokenAction } from "@/app/actions/auth-actions";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -75,6 +76,9 @@ export default function VerifyEmailPage() {
     if (user) {
       await user.reload();
       if (user.emailVerified) {
+        // Get fresh token and update session cookies (including email-verified)
+        const idToken = await user.getIdToken(true);
+        await verifyTokenAction(idToken);
         router.push("/dashboard");
       } else {
         setError("Email not verified yet. Please check your inbox.");

@@ -16,29 +16,37 @@ import { db } from '@/lib/db/client';
 export async function POST(request: NextRequest) {
   try {
     // Get token from cookie or header
-    const cookieToken = request.cookies.get('auth-token');
+    const cookieToken = request.cookies.get('session');
     const authHeader = request.headers.get('authorization');
     const headerToken = authHeader?.startsWith('Bearer ')
       ? authHeader.substring(7)
       : null;
 
-    const idToken = cookieToken?.value || headerToken;
+    const sessionCookie = cookieToken?.value;
 
-    if (!idToken) {
+    if (!sessionCookie && !headerToken) {
       // No token to logout, but still clear cookie
       const response = NextResponse.json(
         { success: true, message: 'Logged out successfully' },
         { status: 200 }
       );
 
-      response.cookies.delete('auth-token');
+      response.cookies.delete('session');
+      response.cookies.delete('email-verified');
       return response;
     }
 
-    // Verify and decode token to get user info
-    let decodedToken;
+    // Verify token to get user info
+    // Session cookies use verifySessionCookie, Bearer tokens use verifyIdToken
+    let firebaseUid: string;
     try {
-      decodedToken = await adminAuth.verifyIdToken(idToken);
+      if (headerToken) {
+        const decoded = await adminAuth.verifyIdToken(headerToken);
+        firebaseUid = decoded.uid;
+      } else {
+        const decoded = await adminAuth.verifySessionCookie(sessionCookie!, false);
+        firebaseUid = decoded.uid;
+      }
     } catch (error) {
       console.error('Token verification failed during logout:', error);
       // Token invalid/expired, but still clear cookie
@@ -47,11 +55,10 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
 
-      response.cookies.delete('auth-token');
+      response.cookies.delete('session');
+      response.cookies.delete('email-verified');
       return response;
     }
-
-    const { uid: firebaseUid } = decodedToken;
 
     // Revoke all refresh tokens for this user
     try {
@@ -90,7 +97,8 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    response.cookies.delete('auth-token');
+    response.cookies.delete('session');
+    response.cookies.delete('email-verified');
 
     return response;
   } catch (error) {
@@ -102,7 +110,8 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
 
-    response.cookies.delete('auth-token');
+    response.cookies.delete('session');
+    response.cookies.delete('email-verified');
 
     return response;
   }

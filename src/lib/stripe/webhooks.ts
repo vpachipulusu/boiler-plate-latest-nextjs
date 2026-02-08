@@ -7,6 +7,7 @@
 import Stripe from 'stripe';
 import { db } from '@/lib/db/client';
 import { getSubscriptionTier } from './subscriptions';
+import { notifySubscriptionChanged, notifyPaymentFailed } from '@/lib/utils/notifications';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not defined');
@@ -137,6 +138,9 @@ async function handleSubscriptionUpdated(
     },
   });
 
+  // Notify user about subscription change
+  await notifySubscriptionChanged(user.id, getSubscriptionTier(priceId || ''));
+
   console.log(`Subscription updated for user ${user.id}`);
 }
 
@@ -178,6 +182,9 @@ async function handleSubscriptionDeleted(
       },
     },
   });
+
+  // Notify user about subscription cancellation
+  await notifySubscriptionChanged(user.id, 'free');
 
   console.log(`Subscription canceled for user ${user.id}`);
 }

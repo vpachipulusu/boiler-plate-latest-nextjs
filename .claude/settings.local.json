@@ -16,7 +16,9 @@
       "Bash(npm test:*)",
       "Bash(npm run dev:kill:*)",
       "Bash(git mv:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
