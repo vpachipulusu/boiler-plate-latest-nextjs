@@ -333,7 +333,9 @@ export async function getUserNotificationsAction(
 /**
  * Mark notification as read
  */
-export async function markNotificationReadAction(notificationId: string): Promise<UserActionResponse> {
+export async function markNotificationReadAction(
+  notificationId: string
+): Promise<UserActionResponse> {
   try {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
@@ -408,7 +410,9 @@ export async function markAllNotificationsReadAction(): Promise<UserActionRespon
 /**
  * Delete notification
  */
-export async function deleteNotificationAction(notificationId: string): Promise<UserActionResponse> {
+export async function deleteNotificationAction(
+  notificationId: string
+): Promise<UserActionResponse> {
   try {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
@@ -622,14 +626,14 @@ export async function exportUserDataAction(): Promise<UserActionResponse> {
         updatedAt: user.updatedAt,
       },
       settings: user.settings,
-      loginHistory: user.loginHistory.map(login => ({
+      loginHistory: user.loginHistory.map((login) => ({
         loginAt: login.loginAt,
         ipAddress: login.ipAddress,
         userAgent: login.userAgent,
         location: login.location,
         successful: login.successful,
       })),
-      notifications: user.notifications.map(notification => ({
+      notifications: user.notifications.map((notification) => ({
         type: notification.type,
         title: notification.title,
         message: notification.message,
@@ -658,10 +662,7 @@ export async function exportUserDataAction(): Promise<UserActionResponse> {
 /**
  * Get login history (alias for getUserLoginHistoryAction)
  */
-export async function getLoginHistoryAction(
-  limit = 10,
-  offset = 0
-): Promise<UserActionResponse> {
+export async function getLoginHistoryAction(limit = 10, offset = 0): Promise<UserActionResponse> {
   try {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
@@ -846,5 +847,30 @@ export async function disable2FAAction(token: string): Promise<UserActionRespons
   } catch (error: any) {
     console.error('Disable 2FA error:', error);
     return { success: false, error: error.message || 'Failed to disable 2FA' };
+  }
+}
+
+/**
+ * Get 2FA status for the current user
+ */
+export async function get2FAStatusAction(): Promise<UserActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { twoFactorEnabled: true },
+    });
+
+    if (!user) return { success: false, error: 'User not found' };
+
+    return {
+      success: true,
+      data: { twoFactorEnabled: user.twoFactorEnabled },
+    };
+  } catch (error: any) {
+    console.error('Get 2FA status error:', error);
+    return { success: false, error: error.message || 'Failed to get 2FA status' };
   }
 }
