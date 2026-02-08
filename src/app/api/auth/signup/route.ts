@@ -41,10 +41,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
     }
 
     // Create Firebase user
@@ -68,16 +65,10 @@ export async function POST(request: NextRequest) {
       }
 
       if (error.code === 'auth/invalid-password') {
-        return NextResponse.json(
-          { error: 'Password does not meet requirements' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Password does not meet requirements' }, { status: 400 });
       }
 
-      return NextResponse.json(
-        { error: 'Failed to create user account' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
     }
 
     // Get client IP and user agent
@@ -163,18 +154,12 @@ export async function POST(request: NextRequest) {
         console.error('Failed to cleanup Firebase user:', cleanupError);
       }
 
-      return NextResponse.json(
-        { error: 'Failed to create user account' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
     }
   } catch (error) {
     console.error('Signup error:', error);
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

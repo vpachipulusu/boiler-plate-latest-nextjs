@@ -39,19 +39,13 @@ export async function POST(request: NextRequest) {
       decodedToken = await adminAuth.verifyIdToken(idToken);
     } catch (error) {
       console.error('Token verification failed:', error);
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
 
     const { uid: firebaseUid, email, email_verified } = decodedToken;
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email not found in token' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email not found in token' }, { status: 400 });
     }
 
     // Get client IP and user agent
@@ -181,10 +175,7 @@ export async function POST(request: NextRequest) {
       // Ignore errors in error logging
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

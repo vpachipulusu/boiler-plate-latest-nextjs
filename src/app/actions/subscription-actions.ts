@@ -363,7 +363,9 @@ export async function resumeSubscriptionAction(): Promise<SubscriptionActionResp
 /**
  * Update subscription (change plan)
  */
-export async function updateSubscriptionAction(newPriceId: string): Promise<SubscriptionActionResponse> {
+export async function updateSubscriptionAction(
+  newPriceId: string
+): Promise<SubscriptionActionResponse> {
   try {
     const userId = await getAuthenticatedUserId();
     if (!userId) {

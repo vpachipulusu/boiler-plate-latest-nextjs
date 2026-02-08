@@ -18,9 +18,7 @@ export async function POST(request: NextRequest) {
     // Get token from cookie or header
     const cookieToken = request.cookies.get('session');
     const authHeader = request.headers.get('authorization');
-    const headerToken = authHeader?.startsWith('Bearer ')
-      ? authHeader.substring(7)
-      : null;
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
     const sessionCookie = cookieToken?.value;
 

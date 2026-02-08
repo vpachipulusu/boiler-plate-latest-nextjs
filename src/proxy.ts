@@ -6,7 +6,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit, getRateLimitHeaders, RATE_LIMIT_CONFIGS, RateLimitConfig } from '@/lib/middleware/rate-limit';
+import {
+  rateLimit,
+  getRateLimitHeaders,
+  RATE_LIMIT_CONFIGS,
+  RateLimitConfig,
+} from '@/lib/middleware/rate-limit';
 
 /**
  * Get client identifier for rate limiting

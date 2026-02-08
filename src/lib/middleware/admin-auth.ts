@@ -79,9 +79,9 @@ export async function verifyAdminAuth(
     }
 
     // Extract permissions from JSON
-    const permissions = (Array.isArray(user.adminUser.permissions)
-      ? user.adminUser.permissions
-      : []) as string[];
+    const permissions = (
+      Array.isArray(user.adminUser.permissions) ? user.adminUser.permissions : []
+    ) as string[];
 
     // Check required permissions if specified
     if (requiredPermissions && requiredPermissions.length > 0) {
@@ -117,37 +117,24 @@ export async function verifyAdminAuth(
 /**
  * Check if user has specific permission
  */
-export function hasPermission(
-  permissions: string[],
-  requiredPermission: string
-): boolean {
+export function hasPermission(permissions: string[], requiredPermission: string): boolean {
   return permissions.includes(requiredPermission) || permissions.includes('*');
 }
 
 /**
  * Check if user has any of the specified permissions
  */
-export function hasAnyPermission(
-  permissions: string[],
-  requiredPermissions: string[]
-): boolean {
+export function hasAnyPermission(permissions: string[], requiredPermissions: string[]): boolean {
   if (permissions.includes('*')) return true;
-  return requiredPermissions.some((permission) =>
-    permissions.includes(permission)
-  );
+  return requiredPermissions.some((permission) => permissions.includes(permission));
 }
 
 /**
  * Check if user has all of the specified permissions
  */
-export function hasAllPermissions(
-  permissions: string[],
-  requiredPermissions: string[]
-): boolean {
+export function hasAllPermissions(permissions: string[], requiredPermissions: string[]): boolean {
   if (permissions.includes('*')) return true;
-  return requiredPermissions.every((permission) =>
-    permissions.includes(permission)
-  );
+  return requiredPermissions.every((permission) => permissions.includes(permission));
 }
 
 /**
