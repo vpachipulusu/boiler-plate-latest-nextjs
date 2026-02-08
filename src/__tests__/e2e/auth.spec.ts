@@ -147,9 +147,7 @@ test.describe('Authentication Flow', () => {
       await page.getByLabel(/confirm password/i).fill('alllowercase');
       await page.getByRole('button', { name: /create account/i }).click();
 
-      await expect(
-        page.getByText(/uppercase.*lowercase.*number/i)
-      ).toBeVisible({ timeout: 5_000 });
+      await expect(page.getByText(/uppercase.*lowercase.*number/i)).toBeVisible({ timeout: 5_000 });
     });
 
     test('should navigate to login page from signup', async ({ page }) => {
@@ -206,19 +204,25 @@ test.describe('Authentication Flow', () => {
       await page.waitForURL(/\/login|\/dashboard/, { timeout: 10_000 });
     });
 
-    test('should redirect /dashboard/profile to /login when not authenticated', async ({ page }) => {
+    test('should redirect /dashboard/profile to /login when not authenticated', async ({
+      page,
+    }) => {
       await page.goto('/dashboard/profile');
       await page.waitForURL(/\/login/, { timeout: 10_000 });
       await expect(page).toHaveURL(/\/login/);
     });
 
-    test('should redirect /dashboard/settings to /login when not authenticated', async ({ page }) => {
+    test('should redirect /dashboard/settings to /login when not authenticated', async ({
+      page,
+    }) => {
       await page.goto('/dashboard/settings');
       await page.waitForURL(/\/login/, { timeout: 10_000 });
       await expect(page).toHaveURL(/\/login/);
     });
 
-    test('should redirect /dashboard/security to /login when not authenticated', async ({ page }) => {
+    test('should redirect /dashboard/security to /login when not authenticated', async ({
+      page,
+    }) => {
       await page.goto('/dashboard/security');
       await page.waitForURL(/\/login/, { timeout: 10_000 });
       await expect(page).toHaveURL(/\/login/);
