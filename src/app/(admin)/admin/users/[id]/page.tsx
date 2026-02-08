@@ -39,8 +39,9 @@ async function getUserDetails(userId: string) {
   return user;
 }
 
-export default async function AdminUserDetailPage({ params }: { params: { id: string } }) {
-  const user = await getUserDetails(params.id);
+export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const user = await getUserDetails(id);
 
   return (
     <div className="space-y-6">
