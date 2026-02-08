@@ -11,22 +11,9 @@ import {
   Search,
   Settings,
   FileText,
-  LogOut,
-  Menu,
   Shield,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { logoutAction } from '@/app/actions/auth-actions';
+import { AdminHeader } from '@/components/admin/admin-header';
 
 async function checkAdminAccess() {
   try {
@@ -110,45 +97,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span className="text-xl font-bold">Admin Portal</span>
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
-            <Badge variant="secondary" className="capitalize">
-              {adminUser.role.replace('_', ' ')}
-            </Badge>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar>
-                    <AvatarImage src={user.avatarUrl || undefined} />
-                    <AvatarFallback>
-                      {user.displayName?.charAt(0) || user.email.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user.displayName || 'Admin'}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Back to Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <form action={logoutAction}>
-                    <button type="submit" className="w-full text-left">
-                      <LogOut className="mr-2 inline h-4 w-4" />
-                      Logout
-                    </button>
-                  </form>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <AdminHeader
+            user={{
+              email: user.email,
+              displayName: user.displayName,
+              avatarUrl: user.avatarUrl,
+            }}
+            adminRole={adminUser.role}
+          />
         </div>
       </div>
 

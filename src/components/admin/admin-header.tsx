@@ -1,0 +1,68 @@
+'use client';
+
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { LogOut } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { logoutAction } from '@/app/actions/auth-actions';
+
+interface AdminHeaderProps {
+  user: {
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  };
+  adminRole: string;
+}
+
+export function AdminHeader({ user, adminRole }: AdminHeaderProps) {
+  const handleLogout = async () => {
+    await logoutAction();
+    window.location.href = '/login';
+  };
+
+  return (
+    <div className="ml-auto flex items-center gap-4">
+      <Badge variant="secondary" className="capitalize">
+        {adminRole.replace('_', ' ')}
+      </Badge>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Avatar>
+              <AvatarImage src={user.avatarUrl || undefined} />
+              <AvatarFallback>{user.displayName?.charAt(0) || user.email.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium">{user.displayName || 'Admin'}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard">Back to Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}

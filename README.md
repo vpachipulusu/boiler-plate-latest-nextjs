@@ -27,6 +27,7 @@ Visit `http://localhost:3000`
 ## ✨ Features
 
 ### Customer Features
+
 - 🔐 **Authentication** - Email/password + OAuth (Google, GitHub)
 - 👤 **User Dashboard** - Stats, activity, notifications
 - ⚙️ **Profile & Settings** - Customizable preferences
@@ -34,6 +35,7 @@ Visit `http://localhost:3000`
 - 💳 **Subscriptions** - Stripe integration with 3 tiers
 
 ### Admin Features
+
 - 📊 **Admin Dashboard** - User metrics, revenue, analytics
 - 👥 **User Management** - Search, filter, edit, delete users
 - 💰 **Subscription Management** - View, cancel, refund subscriptions
@@ -43,6 +45,7 @@ Visit `http://localhost:3000`
 - 📝 **Audit Logs** - Track all admin actions
 
 ### Developer Features
+
 - ⚡ Next.js 16 App Router with Server Components
 - 🎨 shadcn/ui + Tailwind CSS
 - 🗄️ Prisma ORM + PostgreSQL
@@ -131,19 +134,23 @@ src/
 ## 🛠️ Common Issues
 
 ### Lock File Error
+
 ```bash
 npm run dev:kill    # Kills processes and removes lock
 npm run dev         # Start fresh
 ```
 
 ### Module Not Found
+
 This project uses **npm** (not pnpm):
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### Database Issues
+
 ```bash
 npx prisma generate
 npx prisma db push
@@ -154,6 +161,7 @@ See [GUIDE.md](GUIDE.md) for more troubleshooting.
 ## 📦 What's Included
 
 ### Pages
+
 - Landing page
 - Authentication (login, signup, password reset, email verification)
 - Customer dashboard (profile, settings, security)
@@ -162,12 +170,14 @@ See [GUIDE.md](GUIDE.md) for more troubleshooting.
 - Contact form
 
 ### Database Models
+
 - User, UserSettings, LoginHistory, Notification
 - AdminUser, AuditLog
 - Subscription data (via Stripe)
 - SEOMeta, URLRedirect, AppSettings, FeatureFlag, EmailTemplate
 
 ### Features Implemented
+
 - ✅ Complete authentication flow
 - ✅ Customer dashboard with analytics
 - ✅ Full admin portal with 8 pages

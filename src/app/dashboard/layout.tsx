@@ -1,47 +1,27 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { adminAuth } from "@/lib/firebase/admin";
-import { db } from "@/lib/db/client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  Settings,
-  User,
-  LogOut,
-  Bell,
-  Menu,
-  Shield,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { SessionProvider } from "@/components/providers/session-provider";
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { adminAuth } from '@/lib/firebase/admin';
+import { db } from '@/lib/db/client';
+import Link from 'next/link';
+import { LayoutDashboard } from 'lucide-react';
+import { SessionProvider } from '@/components/providers/session-provider';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 
 export const metadata = {
-  title: "Dashboard",
-  description: "Manage your account and settings",
+  title: 'Dashboard',
+  description: 'Manage your account and settings',
 };
 
 async function getUser() {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session")?.value;
+    const sessionCookie = cookieStore.get('session')?.value;
 
     if (!sessionCookie) {
       return null;
     }
 
-    const decodedClaims = await adminAuth.verifySessionCookie(
-      sessionCookie,
-      true
-    );
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
 
     // Get user from database for additional data
     const dbUser = await db.user.findUnique({
@@ -67,15 +47,11 @@ async function getUser() {
   }
 }
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect('/login');
   }
 
   return (
@@ -86,16 +62,11 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center space-x-2">
               <LayoutDashboard className="h-6 w-6" />
-              <span className="hidden font-bold sm:inline-block">
-                Dashboard
-              </span>
+              <span className="hidden font-bold sm:inline-block">Dashboard</span>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-              <Link
-                href="/dashboard"
-                className="transition-colors hover:text-foreground/80"
-              >
+            <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+              <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
                 Home
               </Link>
               <Link
@@ -119,84 +90,15 @@ export default async function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {user.unreadNotificationCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                  {user.unreadNotificationCount > 9 ? '9+' : user.unreadNotificationCount}
-                </span>
-              )}
-            </Button>
-
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
-                >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={user.dbAvatarUrl || user.picture}
-                      alt={user.email || "User"}
-                    />
-                    <AvatarFallback>
-                      {user.email?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user.dbDisplayName || "User"}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/security" className="cursor-pointer">
-                    <Shield className="mr-2 h-4 w-4" />
-                    Security
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/api/auth/logout"
-                    className="cursor-pointer text-destructive"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <DashboardHeader
+            user={{
+              email: user.email,
+              picture: user.picture,
+              dbDisplayName: user.dbDisplayName,
+              dbAvatarUrl: user.dbAvatarUrl,
+              unreadNotificationCount: user.unreadNotificationCount,
+            }}
+          />
         </div>
       </header>
 

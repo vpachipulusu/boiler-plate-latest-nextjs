@@ -55,6 +55,7 @@ Visit `http://localhost:3000`
 #### Option A: Cloud Database (Recommended)
 
 Use a managed PostgreSQL service:
+
 - **Neon** (https://neon.tech) - Serverless Postgres
 - **Supabase** (https://supabase.com)
 - **Railway** (https://railway.app)
@@ -67,6 +68,7 @@ CREATE DATABASE saas_db;
 ```
 
 Update `.env`:
+
 ```
 DATABASE_URL="postgresql://username:password@localhost:5432/saas_db"
 ```
@@ -220,6 +222,7 @@ src/
 ### Tech Stack
 
 **Frontend:**
+
 - Next.js 16 (App Router)
 - React 19 (Server & Client Components)
 - TypeScript
@@ -228,6 +231,7 @@ src/
 - TanStack Query v5
 
 **Backend:**
+
 - Next.js API Routes & Server Actions
 - Prisma ORM v6
 - PostgreSQL
@@ -235,6 +239,7 @@ src/
 - Stripe
 
 **Testing:**
+
 - Vitest (unit & integration)
 - Playwright (E2E)
 - React Testing Library
@@ -305,6 +310,7 @@ Routes are protected via `proxy.ts` middleware:
 ### Login History Tracking
 
 Every successful login is recorded with:
+
 - IP address (from headers)
 - User agent (browser/device info)
 - Geographic location (via IP lookup)
@@ -314,6 +320,7 @@ Every successful login is recorded with:
 ### Server Actions
 
 **Auth Actions** (`src/app/actions/auth-actions.ts`):
+
 - `verifyTokenAction(idToken, metadata)` - Verifies ID token, creates/updates user, records login
 - `loginAction(email, password)` - Validates login credentials
 - `signUpAction(email, password, displayName)` - Validates signup
@@ -321,6 +328,7 @@ Every successful login is recorded with:
 - `requestPasswordResetAction(email)` - Initiates password reset
 
 **User Actions** (`src/app/actions/user-actions.ts`):
+
 - `getUserProfileAction()` - Get user profile
 - `updateUserProfileAction(data)` - Update profile
 - `getUserSettingsAction()` - Get settings
@@ -337,6 +345,7 @@ Every successful login is recorded with:
 ### Access & Authentication
 
 Admin portal is accessible at `/admin` and requires:
+
 1. Valid authentication session
 2. AdminUser record in database
 
@@ -347,6 +356,7 @@ node scripts/create-admin.mjs
 ```
 
 Or manually add to database:
+
 ```sql
 INSERT INTO admin_users (id, user_id, role, permissions, created_at, updated_at)
 VALUES (gen_random_uuid(), 'user-id-here', 'superadmin', '["all"]', NOW(), NOW());
@@ -435,22 +445,24 @@ await logAuditAction(userId, 'user.delete', {
 
 ### Pricing Tiers
 
-| Tier | Price | Features |
-|------|-------|----------|
-| Free | $0 | 3 projects, 1GB storage, basic features |
-| Pro | $29/mo | Unlimited projects, 50GB storage, priority support |
-| Enterprise | $99/mo | Custom everything, dedicated support |
+| Tier       | Price  | Features                                           |
+| ---------- | ------ | -------------------------------------------------- |
+| Free       | $0     | 3 projects, 1GB storage, basic features            |
+| Pro        | $29/mo | Unlimited projects, 50GB storage, priority support |
+| Enterprise | $99/mo | Custom everything, dedicated support               |
 
 ### Pricing Page Smart CTAs
 
 The pricing page detects authentication state and shows appropriate CTAs:
 
 **For Non-Authenticated Users:**
+
 - Free: "Get Started" → `/signup`
 - Pro: "Start Free Trial" → `/signup?plan=pro`
 - Enterprise: "Contact Sales" → `/contact?plan=enterprise`
 
 **For Authenticated Users:**
+
 - Shows "Current Plan" for active tier (disabled)
 - Shows "Upgrade to Pro" for free users → Stripe Checkout
 - Shows "Upgrade to Enterprise" → Contact form
@@ -478,11 +490,7 @@ Stripe webhooks are handled at `/api/webhooks/stripe`:
 
 ```typescript
 // Create checkout session
-const result = await createCheckoutSessionAction(
-  priceId,
-  successUrl,
-  cancelUrl
-);
+const result = await createCheckoutSessionAction(priceId, successUrl, cancelUrl);
 
 // Get subscription status
 const status = await getSubscriptionStatusAction();
@@ -507,6 +515,7 @@ npm run test:unit
 Test files: `src/__tests__/unit/**/*.test.tsx`
 
 Example:
+
 ```typescript
 import { render, screen } from '@testing-library/react';
 import { Button } from '@/components/ui/button';
@@ -526,6 +535,7 @@ npm run test:e2e
 Test files: `src/__tests__/e2e/**/*.spec.ts`
 
 Example:
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -596,11 +606,13 @@ STRIPE_WEBHOOK_SECRET
 ### Lock File Error
 
 **Problem:**
+
 ```
 ⨯ Unable to acquire lock at .next\dev\lock
 ```
 
 **Solution:**
+
 ```bash
 npm run dev:kill    # Kills processes and removes lock
 npm run dev         # Start fresh
@@ -609,12 +621,14 @@ npm run dev         # Start fresh
 ### Module Not Found: lucide-react
 
 **Problem:**
+
 ```
 Module not found: Can't resolve 'lucide-react'
 ```
 
 **Solution:**
 This project uses **npm** (not pnpm). Run:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -623,11 +637,13 @@ npm install
 ### Database Connection Issues
 
 **Problem:**
+
 ```
 Can't reach database server
 ```
 
 **Solutions:**
+
 1. Check `DATABASE_URL` in `.env`
 2. Ensure database is running
 3. Verify network connectivity
@@ -636,11 +652,13 @@ Can't reach database server
 ### Firebase Authentication Errors
 
 **Problem:**
+
 ```
 Firebase: Error (auth/invalid-api-key)
 ```
 
 **Solutions:**
+
 1. Verify `.env` variables match Firebase Console
 2. Check API key restrictions
 3. Ensure Firebase Authentication is enabled
@@ -649,11 +667,13 @@ Firebase: Error (auth/invalid-api-key)
 ### Stripe Webhook Failures
 
 **Problem:**
+
 ```
 Webhook signature verification failed
 ```
 
 **Solutions:**
+
 1. Check `STRIPE_WEBHOOK_SECRET` in `.env`
 2. Use Stripe CLI for local testing:
    ```bash
@@ -687,6 +707,7 @@ If users get stuck in login/signup loop:
 Can't access `/admin` even when logged in
 
 **Solution:**
+
 1. Ensure user has `AdminUser` record:
    ```bash
    node scripts/create-admin.mjs
@@ -699,20 +720,24 @@ Can't access `/admin` even when logged in
 ## Additional Resources
 
 ### Firebase Documentation
+
 - [Firebase Auth](https://firebase.google.com/docs/auth)
 - [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
 
 ### Stripe Documentation
+
 - [Stripe Checkout](https://stripe.com/docs/payments/checkout)
 - [Webhooks](https://stripe.com/docs/webhooks)
 - [Subscriptions](https://stripe.com/docs/billing/subscriptions/overview)
 
 ### Next.js Documentation
+
 - [App Router](https://nextjs.org/docs/app)
 - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
 - [Middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)
 
 ### Prisma Documentation
+
 - [Prisma Client](https://www.prisma.io/docs/concepts/components/prisma-client)
 - [Schema](https://www.prisma.io/docs/concepts/components/prisma-schema)
 - [Migrations](https://www.prisma.io/docs/concepts/components/prisma-migrate)
@@ -722,6 +747,7 @@ Can't access `/admin` even when logged in
 ## Support
 
 For issues or questions:
+
 1. Check this guide
 2. Review GitHub issues
 3. Check Next.js/Firebase/Stripe docs
