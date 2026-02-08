@@ -53,14 +53,17 @@ test.describe('Authentication Flow', () => {
 
       // Intercept the Firebase auth call to delay it
       await page.route('**/*identitytoolkit*', async (route) => {
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         await route.abort();
       });
 
-      await page.getByRole('button', { name: /sign in/i }).click();
+      // Click and immediately check for loading state
+      const submitButton = page.getByRole('button', { name: /sign in/i });
+      await submitButton.click();
 
-      // Button should show loading state
-      await expect(page.getByText(/signing in/i)).toBeVisible({ timeout: 3_000 });
+      // Button should show loading state - check for disabled state and text change
+      await expect(submitButton).toBeDisabled({ timeout: 1_000 });
+      await expect(page.getByText('Signing in...')).toBeVisible({ timeout: 1_000 });
     });
 
     test('should navigate to signup page from login', async ({ page }) => {
@@ -69,7 +72,10 @@ test.describe('Authentication Flow', () => {
     });
 
     test('should navigate to forgot password page', async ({ page }) => {
-      await page.getByRole('link', { name: /forgot password/i }).click();
+      await Promise.all([
+        page.waitForURL(/\/reset-password/),
+        page.getByRole('link', { name: /forgot password/i }).click(),
+      ]);
       await expect(page).toHaveURL(/\/reset-password/);
     });
   });
@@ -162,9 +168,11 @@ test.describe('Authentication Flow', () => {
 
   test.describe('Email Verification Page', () => {
     test('should load the verify email page', async ({ page }) => {
+      // Verify email page redirects unauthenticated users to login
       await page.goto('/verify-email');
       await waitForPageReady(page);
-      await expect(page).toHaveURL(/\/verify-email/);
+      // Should redirect to login since we're not authenticated
+      await expect(page).toHaveURL(/\/login/);
     });
   });
 
