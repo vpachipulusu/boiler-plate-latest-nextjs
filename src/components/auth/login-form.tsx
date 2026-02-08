@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,14 +14,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { signInWithEmail } from "@/lib/firebase/auth-helpers";
-import { verifyTokenAction } from "@/app/actions/auth-actions";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { signInWithEmail } from '@/lib/firebase/auth-helpers';
+import { verifyTokenAction } from '@/app/actions/auth-actions';
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -34,8 +34,8 @@ export function LoginForm() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -44,10 +44,11 @@ export function LoginForm() {
       setIsLoading(true);
       setError(null);
 
-      const { user, idToken, error: signInError } = await signInWithEmail(
-        data.email,
-        data.password
-      );
+      const {
+        user,
+        idToken,
+        error: signInError,
+      } = await signInWithEmail(data.email, data.password);
 
       if (signInError) {
         setError(signInError);
@@ -57,18 +58,18 @@ export function LoginForm() {
       if (user && idToken) {
         // Create session on server
         const result = await verifyTokenAction(idToken);
-        
+
         if (!result.success) {
-          setError(result.error || "Failed to create session. Please try again.");
+          setError(result.error || 'Failed to create session. Please try again.');
           return;
         }
-        
-        router.push("/dashboard");
+
+        router.push('/dashboard');
         router.refresh();
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
-      console.error("Login error:", error);
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -76,11 +77,9 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {error && (
-          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-            {error}
-          </div>
+          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
         )}
 
         <FormField
@@ -138,7 +137,7 @@ export function LoginForm() {
               Signing in...
             </>
           ) : (
-            "Sign In"
+            'Sign In'
           )}
         </Button>
       </form>

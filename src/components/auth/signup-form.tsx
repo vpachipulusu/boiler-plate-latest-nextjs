@@ -97,7 +97,7 @@ export function SignupForm({ selectedPlan }: SignupFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {error && (
           <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
         )}

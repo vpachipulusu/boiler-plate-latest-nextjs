@@ -143,14 +143,14 @@ export function PricingCard({ tier, isAuthenticated, userTier }: PricingCardProp
 
         {/* CTA */}
         <Button
-          asChild={tier.name === 'Enterprise' || (!isAuthenticated && tier.name !== 'Pro')}
+          asChild={tier.name !== 'Pro' || !isAuthenticated}
           className="w-full"
           variant={tier.popular ? 'default' : 'outline'}
           size="lg"
           disabled={ctaConfig.disabled || isLoading}
           onClick={tier.name === 'Pro' && isAuthenticated ? handleCTAClick : undefined}
         >
-          {tier.name === 'Enterprise' || (!isAuthenticated && tier.name !== 'Pro') ? (
+          {tier.name !== 'Pro' || !isAuthenticated ? (
             <Link href={ctaConfig.href}>{isLoading ? 'Processing...' : ctaConfig.text}</Link>
           ) : (
             <span>{isLoading ? 'Processing...' : ctaConfig.text}</span>
