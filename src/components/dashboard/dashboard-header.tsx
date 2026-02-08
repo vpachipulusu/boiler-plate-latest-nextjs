@@ -55,11 +55,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1.5 py-1">
-              <p className="text-sm font-semibold leading-none">{user.dbDisplayName || 'User'}</p>
-              <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+        <DropdownMenuContent className="w-64" align="end" forceMount>
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-2 py-1.5">
+              <p className="text-sm font-bold leading-none">{user.dbDisplayName || 'User'}</p>
+              <p className="text-xs leading-none text-muted-foreground/80">{user.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

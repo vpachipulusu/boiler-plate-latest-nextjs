@@ -45,11 +45,11 @@ export function AdminHeader({ user, adminRole }: AdminHeaderProps) {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1.5 py-1">
-              <p className="text-sm font-semibold">{user.displayName || 'Admin'}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
+            <div className="flex flex-col space-y-2 py-1.5">
+              <p className="text-sm font-bold">{user.displayName || 'Admin'}</p>
+              <p className="text-xs text-muted-foreground/80">{user.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
