@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Get client IP and user agent
     const forwardedFor = request.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : request.ip;
+    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
     const userAgent = request.headers.get('user-agent');
 
     // Create user in database

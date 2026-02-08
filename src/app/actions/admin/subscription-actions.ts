@@ -10,7 +10,7 @@ import { db } from '@/lib/db/client';
  * Initialize Stripe
  */
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
   typescript: true,
 });
 
@@ -688,7 +688,7 @@ export async function syncStripeSubscriptionsAction(): Promise<AdminSubscription
           data: {
             subscriptionStatus: subscription.status,
             stripePriceId: subscription.items.data[0].price.id,
-            stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
           },
         });
 

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Get client IP and user agent
     const forwardedFor = request.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : request.ip;
+    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
     const userAgent = request.headers.get('user-agent');
 
     // Find or create user in database
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
       const body = await request.clone().json();
       if (body.idToken) {
         const forwardedFor = request.headers.get('x-forwarded-for');
-        const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : request.ip;
+        const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
 
         await db.auditLog.create({
           data: {

@@ -10,7 +10,7 @@ import { db } from '@/lib/db/client';
  * Initialize Stripe
  */
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
   typescript: true,
 });
 
@@ -97,7 +97,7 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
         subscriptionDetails = {
           id: subscription.id,
           status: subscription.status,
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
           canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
         };
@@ -303,7 +303,7 @@ export async function cancelSubscriptionAction(): Promise<SubscriptionActionResp
       success: true,
       data: {
         message: 'Subscription will be canceled at the end of the billing period',
-        cancelAt: new Date(subscription.current_period_end * 1000),
+        cancelAt: new Date((subscription as any).current_period_end * 1000),
       },
     };
   } catch (error: any) {
@@ -503,7 +503,7 @@ export async function getUpcomingInvoiceAction(): Promise<SubscriptionActionResp
     }
 
     // Get upcoming invoice
-    const invoice = await stripe.invoices.retrieveUpcoming({
+    const invoice = await (stripe.invoices as any).retrieveUpcoming({
       customer: user.stripeCustomerId,
       subscription: user.stripeSubscriptionId,
     });

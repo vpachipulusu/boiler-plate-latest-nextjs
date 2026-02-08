@@ -19,7 +19,7 @@ function getStripeClient(): Stripe {
 
   if (!stripeInstance) {
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2025-08-27.basil',
       typescript: true,
     });
   }
@@ -295,7 +295,7 @@ export async function syncSubscriptionStatus(userId: string): Promise<void> {
       subscriptionStatus: subscription.status,
       stripePriceId: priceId,
       subscriptionTier: getSubscriptionTier(priceId || ''),
-      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 }

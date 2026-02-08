@@ -3,6 +3,8 @@
 import { cookies, headers } from 'next/headers';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
+import { auth } from '@/lib/firebase/client';
+import { applyActionCode } from 'firebase/auth';
 import { db } from '@/lib/db/client';
 import { emailSchema, passwordSchema } from '@/lib/utils/validation';
 import { getLocationFromIP } from '@/lib/utils/geo-ip';
@@ -418,7 +420,7 @@ export async function requestPasswordResetAction(email: string): Promise<AuthAct
 export async function verifyEmailAction(oobCode: string): Promise<AuthActionResponse> {
   try {
     // Apply email verification code
-    await adminAuth.applyActionCode(oobCode);
+    await applyActionCode(auth, oobCode);
 
     return {
       success: true,

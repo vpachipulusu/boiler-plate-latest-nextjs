@@ -79,9 +79,9 @@ export async function verifyAdminAuth(
     }
 
     // Extract permissions from JSON
-    const permissions = Array.isArray(user.adminUser.permissions)
+    const permissions = (Array.isArray(user.adminUser.permissions)
       ? user.adminUser.permissions
-      : [];
+      : []) as string[];
 
     // Check required permissions if specified
     if (requiredPermissions && requiredPermissions.length > 0) {

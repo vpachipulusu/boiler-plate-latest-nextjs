@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit, getRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/middleware/rate-limit';
+import { rateLimit, getRateLimitHeaders, RATE_LIMIT_CONFIGS, RateLimitConfig } from '@/lib/middleware/rate-limit';
 
 /**
  * Get client identifier for rate limiting
@@ -25,7 +25,7 @@ function getClientIdentifier(request: NextRequest): string {
   }
 
   // Fallback to connection IP
-  return request.ip || 'unknown';
+  return 'unknown';
 }
 
 /**
@@ -34,7 +34,7 @@ function getClientIdentifier(request: NextRequest): string {
 function applyRateLimit(request: NextRequest, pathname: string): NextResponse | null {
   const identifier = getClientIdentifier(request);
 
-  let rateLimitConfig = RATE_LIMIT_CONFIGS.general;
+  let rateLimitConfig: RateLimitConfig = RATE_LIMIT_CONFIGS.general;
 
   // Apply different rate limits based on path
   if (pathname.startsWith('/api/auth/')) {

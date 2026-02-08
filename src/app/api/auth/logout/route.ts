@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (user) {
       // Create audit log
       const forwardedFor = request.headers.get('x-forwarded-for');
-      const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : request.ip;
+      const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
 
       await db.auditLog.create({
         data: {

@@ -21,7 +21,7 @@ function getStripeClient(): Stripe {
 
   if (!stripeInstance) {
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2025-08-27.basil',
       typescript: true,
     });
   }
@@ -75,7 +75,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
       stripePriceId: priceId,
       subscriptionTier: getSubscriptionTier(priceId || ''),
       subscriptionStatus: subscription.status,
-      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 
@@ -123,7 +123,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
       stripePriceId: priceId,
       subscriptionTier: getSubscriptionTier(priceId || ''),
       subscriptionStatus: subscription.status,
-      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 
@@ -195,7 +195,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
  * Handle invoice payment succeeded
  */
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
 
   if (!subscriptionId) {
     return; // Not a subscription invoice
@@ -218,7 +218,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
     where: { id: user.id },
     data: {
       subscriptionStatus: 'active',
-      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 
@@ -243,7 +243,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
  * Handle invoice payment failed
  */
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
 
   if (!subscriptionId) {
     return;
@@ -363,4 +363,5 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
   }
 }
 
+const stripe = getStripeClient();
 export { stripe };
