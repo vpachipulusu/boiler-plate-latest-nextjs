@@ -37,10 +37,7 @@ const signUpSchema = z.object({
 /**
  * Login action - validates credentials and sets session cookie
  */
-export async function loginAction(
-  email: string,
-  password: string
-): Promise<AuthActionResponse> {
+export async function loginAction(email: string, password: string): Promise<AuthActionResponse> {
   try {
     // Validate input
     const validation = loginSchema.safeParse({ email, password });
@@ -138,7 +135,10 @@ export async function logoutAction(): Promise<AuthActionResponse> {
 /**
  * Verify token and sync user with database
  */
-export async function verifyTokenAction(idToken: string): Promise<AuthActionResponse> {
+export async function verifyTokenAction(
+  idToken: string,
+  metadata?: { selectedPlan?: string }
+): Promise<AuthActionResponse> {
   try {
     // Verify Firebase ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
@@ -153,9 +153,10 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
 
     // Get request headers for login tracking
     const headersList = await headers();
-    const ipAddress = headersList.get('x-forwarded-for')?.split(',')[0].trim() || 
-                      headersList.get('x-real-ip') || 
-                      'unknown';
+    const ipAddress =
+      headersList.get('x-forwarded-for')?.split(',')[0].trim() ||
+      headersList.get('x-real-ip') ||
+      'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
 
     // Get or create user in database
@@ -168,6 +169,9 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
     });
 
     if (!user) {
+      // Determine subscription tier based on selected plan
+      const subscriptionTier = metadata?.selectedPlan || 'free';
+
       // Create new user in database
       user = await db.user.create({
         data: {
@@ -175,6 +179,7 @@ export async function verifyTokenAction(idToken: string): Promise<AuthActionResp
           email,
           emailVerified: email_verified || false,
           lastLoginAt: new Date(),
+          subscriptionTier,
         },
         include: {
           settings: true,

@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, X } from 'lucide-react';
+import { PricingCard } from '@/components/pricing/pricing-card';
+import { adminAuth } from '@/lib/firebase/admin';
+import { db } from '@/lib/db/client';
 
 const tiers = [
   {
@@ -67,7 +69,36 @@ const tiers = [
   },
 ];
 
-export default function PricingPage() {
+async function getUserSession() {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
+
+    if (!sessionCookie) {
+      return { isAuthenticated: false };
+    }
+
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const user = await db.user.findUnique({
+      where: { firebaseUid: decodedClaims.uid },
+      select: {
+        id: true,
+        subscriptionTier: true,
+      },
+    });
+
+    return {
+      isAuthenticated: true,
+      userTier: user?.subscriptionTier || 'free',
+    };
+  } catch (error) {
+    return { isAuthenticated: false };
+  }
+}
+
+export default async function PricingPage() {
+  const session = await getUserSession();
+
   return (
     <div className="min-h-screen px-4 py-12">
       <div className="mx-auto max-w-7xl">
@@ -82,50 +113,12 @@ export default function PricingPage() {
         {/* Pricing Cards */}
         <div className="mb-12 grid gap-8 md:grid-cols-3">
           {tiers.map((tier) => (
-            <Card
+            <PricingCard
               key={tier.name}
-              className={tier.popular ? 'scale-105 border-primary shadow-lg' : ''}
-            >
-              <CardHeader>
-                <div className="mb-4 flex items-center justify-between">
-                  <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                  {tier.popular && <Badge variant="default">Most Popular</Badge>}
-                </div>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold">${tier.price}</span>
-                  {tier.price > 0 && <span className="text-muted-foreground">/month</span>}
-                </div>
-                <CardDescription>{tier.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Features */}
-                <div className="space-y-3">
-                  {tier.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                      <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
-
-                  {tier.limitations.map((limitation) => (
-                    <div key={limitation} className="flex items-start gap-2 text-muted-foreground">
-                      <X className="mt-0.5 h-5 w-5 shrink-0" />
-                      <span className="text-sm">{limitation}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <Button
-                  asChild
-                  className="w-full"
-                  variant={tier.popular ? 'default' : 'outline'}
-                  size="lg"
-                >
-                  <Link href={tier.href}>{tier.cta}</Link>
-                </Button>
-              </CardContent>
-            </Card>
+              tier={tier}
+              isAuthenticated={session.isAuthenticated}
+              userTier={session.userTier}
+            />
           ))}
         </div>
 

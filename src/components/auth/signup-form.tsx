@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,32 +13,36 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { signUpWithEmail } from "@/lib/firebase/auth-helpers";
-import { verifyTokenAction } from "@/app/actions/auth-actions";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { signUpWithEmail } from '@/lib/firebase/auth-helpers';
+import { verifyTokenAction } from '@/app/actions/auth-actions';
 
 const signupSchema = z
   .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Please enter a valid email address'),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
+      .min(8, 'Password must be at least 8 characters')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
       ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ["confirmPassword"],
+    path: ['confirmPassword'],
   });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-export function SignupForm() {
+interface SignupFormProps {
+  selectedPlan?: string;
+}
+
+export function SignupForm({ selectedPlan }: SignupFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,10 +50,10 @@ export function SignupForm() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -58,10 +62,11 @@ export function SignupForm() {
       setIsLoading(true);
       setError(null);
 
-      const { user, idToken, error: signUpError } = await signUpWithEmail(
-        data.email,
-        data.password
-      );
+      const {
+        user,
+        idToken,
+        error: signUpError,
+      } = await signUpWithEmail(data.email, data.password);
 
       if (signUpError) {
         setError(signUpError);
@@ -69,20 +74,22 @@ export function SignupForm() {
       }
 
       if (user && idToken) {
-        // Create session on server
-        const result = await verifyTokenAction(idToken);
-        
+        // Create session on server with selected plan
+        const result = await verifyTokenAction(idToken, {
+          selectedPlan: selectedPlan || 'free',
+        });
+
         if (!result.success) {
-          setError(result.error || "Failed to create session. Please try again.");
+          setError(result.error || 'Failed to create session. Please try again.');
           return;
         }
-        
+
         // Redirect to verify email page or dashboard
-        router.push("/verify-email");
+        router.push('/verify-email');
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
-      console.error("Signup error:", error);
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Signup error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -92,9 +99,7 @@ export function SignupForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {error && (
-          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-            {error}
-          </div>
+          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
         )}
 
         <FormField
@@ -184,7 +189,7 @@ export function SignupForm() {
               Creating account...
             </>
           ) : (
-            "Create Account"
+            'Create Account'
           )}
         </Button>
       </form>

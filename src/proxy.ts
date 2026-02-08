@@ -75,16 +75,23 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Auth pages that should redirect if user is already authenticated
+  const authPages = ['/login', '/signup'];
+  const isAuthPage = authPages.some((route) => pathname.startsWith(route));
+  const authToken = request.cookies.get('session');
+
+  if (isAuthPage && authToken) {
+    // Redirect authenticated users away from auth pages to dashboard
+    const dashboardUrl = new URL('/dashboard', request.url);
+    return NextResponse.redirect(dashboardUrl);
+  }
+
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/settings', '/profile'];
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const protectedRoutes = ['/dashboard', '/settings', '/profile', '/security'];
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
   if (isProtectedRoute) {
     // Check for authentication cookie or session
-    const authToken = request.cookies.get('session');
-
     if (!authToken) {
       // Redirect to login if not authenticated
       const loginUrl = new URL('/login', request.url);
@@ -118,9 +125,7 @@ export async function proxy(request: NextRequest) {
 
   // Public API routes (no auth required)
   const publicApiRoutes = ['/api/webhooks/', '/api/health'];
-  const isPublicApiRoute = publicApiRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const isPublicApiRoute = publicApiRoutes.some((route) => pathname.startsWith(route));
 
   // Protected API routes (require authentication)
   if (pathname.startsWith('/api/') && !isPublicApiRoute) {
