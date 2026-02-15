@@ -64,6 +64,33 @@ const PRICE_IDS: Record<string, { monthly: string; yearly: string }> = {
 };
 
 /**
+ * Safely extract the period end timestamp from a Stripe subscription.
+ * Handles different Stripe API versions where property names may vary.
+ */
+function getSubscriptionPeriodEnd(subscription: any): Date | null {
+  const timestamp =
+    subscription.current_period_end ??
+    subscription.currentPeriodEnd ??
+    subscription.current_period?.end;
+
+  if (typeof timestamp === 'number' && timestamp > 0) {
+    return new Date(timestamp * 1000);
+  }
+  return null;
+}
+
+/**
+ * Extract a customer ID string from a Stripe customer field
+ * which may be a string, Customer object, or null.
+ */
+function extractCustomerId(customer: string | { id: string } | null | undefined): string | null {
+  if (!customer) return null;
+  if (typeof customer === 'string') return customer;
+  if (typeof customer === 'object' && 'id' in customer) return customer.id;
+  return null;
+}
+
+/**
  * Create checkout session schema
  */
 const createCheckoutSessionSchema = z.object({
@@ -113,9 +140,9 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
         subscriptionDetails = {
           id: subscription.id,
           status: subscription.status,
-          currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+          currentPeriodEnd: getSubscriptionPeriodEnd(subscription)?.toISOString() ?? null,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
         };
       } catch (error) {
         console.error('Failed to retrieve Stripe subscription:', error);
@@ -468,6 +495,25 @@ export async function resumeSubscriptionAction(): Promise<SubscriptionActionResp
       };
     }
 
+    // First check current subscription state
+    const currentSub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+
+    // Can only resume if subscription is still active (just scheduled to cancel)
+    if (currentSub.status === 'canceled') {
+      return {
+        success: false,
+        error: 'This subscription has already been canceled and cannot be resumed. Please subscribe again from the pricing page.',
+      };
+    }
+
+    // If already not set to cancel, it's already active
+    if (!currentSub.cancel_at_period_end) {
+      return {
+        success: true,
+        data: { message: 'Subscription is already active' },
+      };
+    }
+
     // Resume subscription
     await stripe.subscriptions.update(user.stripeSubscriptionId, {
       cancel_at_period_end: false,
@@ -731,13 +777,17 @@ export async function getSubscriptionDetailsAction(): Promise<SubscriptionAction
 
     let billingPeriod: 'monthly' | 'yearly' | null = null;
     let autoRenewal = false;
-    let currentPeriodEnd: Date | null = null;
+    let currentPeriodEnd: string | null = null;
+    let stripeStatus: string | null = null;
 
     if (user.stripeSubscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
         autoRenewal = !subscription.cancel_at_period_end;
-        currentPeriodEnd = new Date((subscription as any).current_period_end * 1000);
+        stripeStatus = subscription.status;
+
+        const periodEndDate = getSubscriptionPeriodEnd(subscription);
+        currentPeriodEnd = periodEndDate?.toISOString() ?? null;
 
         // Determine billing period from price interval
         const priceId = subscription.items.data[0]?.price.id;
@@ -751,11 +801,17 @@ export async function getSubscriptionDetailsAction(): Promise<SubscriptionAction
       }
     }
 
+    // Fall back to DB period end if Stripe retrieval didn't produce one
+    if (!currentPeriodEnd && user.stripeCurrentPeriodEnd) {
+      currentPeriodEnd = user.stripeCurrentPeriodEnd.toISOString();
+    }
+
     return {
       success: true,
       data: {
         subscriptionTier: user.subscriptionTier,
         subscriptionStatus: user.subscriptionStatus,
+        stripeStatus,
         billingPeriod,
         autoRenewal,
         currentPeriodEnd,
@@ -860,7 +916,8 @@ export async function deletePaymentMethodAction(
 
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
-    if (pm.customer !== user.stripeCustomerId) {
+    const pmCustomerId = extractCustomerId(pm.customer as any);
+    if (pmCustomerId !== user.stripeCustomerId) {
       return { success: false, error: 'Payment method not found' };
     }
 
@@ -900,7 +957,8 @@ export async function setDefaultPaymentMethodAction(
 
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
-    if (pm.customer !== user.stripeCustomerId) {
+    const pmCustomerId = extractCustomerId(pm.customer as any);
+    if (pmCustomerId !== user.stripeCustomerId) {
       return { success: false, error: 'Payment method not found' };
     }
 
@@ -911,9 +969,15 @@ export async function setDefaultPaymentMethodAction(
 
     // Also update on subscription if exists
     if (user.stripeSubscriptionId) {
-      await stripe.subscriptions.update(user.stripeSubscriptionId, {
-        default_payment_method: paymentMethodId,
-      });
+      try {
+        await stripe.subscriptions.update(user.stripeSubscriptionId, {
+          default_payment_method: paymentMethodId,
+        });
+      } catch (subError) {
+        // Subscription update may fail if subscription is in certain states;
+        // customer-level default is already set so this is non-critical
+        console.error('Failed to update subscription default payment method:', subError);
+      }
     }
 
     return { success: true, data: { message: 'Default payment method updated' } };
