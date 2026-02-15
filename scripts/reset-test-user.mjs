@@ -2,10 +2,10 @@
 
 /**
  * Reset Test User to Free Tier
- * 
+ *
  * This script resets the test user back to free tier
  * after running subscription upgrade tests.
- * 
+ *
  * Usage:
  *   node scripts/reset-test-user.mjs
  */
@@ -59,7 +59,6 @@ async function resetTestUser() {
     console.log(`  Email: ${TEST_USER_EMAIL}`);
     console.log(`  Tier:  ${updatedUser.subscriptionTier}`);
     console.log(`  Status: ${updatedUser.subscriptionStatus}\n`);
-
   } catch (error) {
     console.error('❌ Error resetting test user:', error);
     throw error;

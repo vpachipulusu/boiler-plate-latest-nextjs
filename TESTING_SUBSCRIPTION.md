@@ -3,7 +3,9 @@
 ## 1. Setup Test Environment
 
 ### Configure Environment Variables
+
 Add to `.env.local`:
+
 ```bash
 # Test User Credentials
 TEST_USER_EMAIL=testuser@example.com
@@ -22,11 +24,13 @@ STRIPE_PRICE_ID_ENTERPRISE_YEARLY=price_your_id_here
 ```
 
 ### Create Test User
+
 ```bash
 npm run test:setup
 ```
 
 This creates a test user with:
+
 - Email: `testuser@example.com`
 - Password: `TestPass123!`
 - Tier: `free`
@@ -35,17 +39,21 @@ This creates a test user with:
 ## 2. Run Tests
 
 ### Run All Subscription Tests
+
 ```bash
 npm run test:e2e:subscription
 ```
 
 ### Run in UI Mode (Recommended for Development)
+
 ```bash
 npm run test:e2e:ui
 ```
+
 Then select `subscription.spec.ts` or `subscription-simple.spec.ts`
 
 ### Run Specific Test
+
 ```bash
 # Happy path only
 npx playwright test subscription-simple
@@ -63,6 +71,7 @@ npx playwright test subscription --debug
 ## 3. Reset Test User After Tests
 
 If tests upgraded the user to Pro, reset back to free tier:
+
 ```bash
 npm run test:reset
 ```
@@ -70,6 +79,7 @@ npm run test:reset
 ## 4. What Gets Tested
 
 ✅ **Full Upgrade Flow**
+
 - Login as free tier user
 - Navigate to pricing page
 - Click "Upgrade to Pro"
@@ -80,12 +90,14 @@ npm run test:reset
 - Verify dashboard shows Pro tier
 
 ✅ **Error Scenarios**
+
 - Declined card handling
 - Insufficient funds handling
 - Expired card handling
 - Checkout cancellation
 
 ✅ **UI Updates**
+
 - Success banner display
 - Subscription status polling
 - Auto-refresh after success
@@ -95,13 +107,14 @@ npm run test:reset
 
 Use these test card numbers:
 
-| Card | Scenario |
-|------|----------|
-| `4242 4242 4242 4242` | ✅ Success |
-| `4000 0000 0000 0002` | ❌ Declined |
+| Card                  | Scenario              |
+| --------------------- | --------------------- |
+| `4242 4242 4242 4242` | ✅ Success            |
+| `4000 0000 0000 0002` | ❌ Declined           |
 | `4000 0000 0000 9995` | ❌ Insufficient funds |
 
 **Always use:**
+
 - Expiry: Any future date (e.g., `12/34`)
 - CVC: Any 3 digits (e.g., `123`)
 - ZIP: Any 5 digits (e.g., `12345`)
@@ -109,6 +122,7 @@ Use these test card numbers:
 ## 6. Viewing Test Results
 
 After running tests:
+
 ```bash
 # Open HTML report
 npx playwright show-report
@@ -119,23 +133,28 @@ Or check `playwright-report/index.html` in your browser.
 ## 7. Troubleshooting
 
 **Test user already on Pro tier?**
+
 ```bash
 npm run test:reset
 ```
 
 **Webhook not firing?**
+
 - Check `STRIPE_WEBHOOK_SECRET` is correct
 - For local testing, use Stripe CLI:
+
 ```bash
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 **Timeout errors?**
+
 - Ensure dev server is running: `npm run dev`
 - Check database connection
 - Review server logs for errors
 
 **Tests skipped?**
+
 - Verify environment variables are set
 - Check test user exists: `npm run test:setup`
 
@@ -153,30 +172,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright
         run: npx playwright install --with-deps
-      
+
       - name: Setup test user
         run: npm run test:setup
         env:
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      
+
       - name: Run E2E tests
         run: npm run test:e2e:subscription
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
-      
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:

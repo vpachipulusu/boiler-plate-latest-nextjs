@@ -116,43 +116,50 @@ test.describe('Subscription Upgrade Flow', () => {
       await expect(page.getByRole('heading', { name: /^enterprise$/i })).toBeVisible();
     });
 
-    test('should show "Upgrade to Pro" button for authenticated free tier users', async ({ page }) => {
+    test('should show "Upgrade to Pro" button for authenticated free tier users', async ({
+      page,
+    }) => {
       await navigateAndWait(page, '/pricing');
 
       // For authenticated users on free tier, Pro tier should show upgrade button
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
-      
+
       // Button text might be "Upgrade to Pro" or "Start Free Trial"
-      const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro|start free trial/i });
-      const ctaExists = await upgradeButton.count().then(count => count > 0);
+      const upgradeButton = proCard.getByRole('button', {
+        name: /upgrade to pro|start free trial/i,
+      });
+      const ctaExists = await upgradeButton.count().then((count) => count > 0);
 
       if (ctaExists) {
         await expect(upgradeButton.first()).toBeVisible();
       }
     });
 
-    test('should initiate Stripe checkout when clicking upgrade button', async ({ page, context }) => {
+    test('should initiate Stripe checkout when clicking upgrade button', async ({
+      page,
+      context,
+    }) => {
       await navigateAndWait(page, '/pricing');
 
       // Find Pro tier upgrade button
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
       const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro/i });
-      
-      const buttonExists = await upgradeButton.count().then(count => count > 0);
-      
+
+      const buttonExists = await upgradeButton.count().then((count) => count > 0);
+
       if (buttonExists) {
         // Start waiting for new page before clicking
         const checkoutPagePromise = context.waitForEvent('page');
-        
+
         await upgradeButton.click();
-        
+
         // Wait for Stripe checkout page to open
         const checkoutPage = await checkoutPagePromise;
         await checkoutPage.waitForLoadState();
-        
+
         // Verify we're on Stripe checkout
         await expect(checkoutPage).toHaveURL(/checkout\.stripe\.com/);
-        
+
         await checkoutPage.close();
       } else {
         test.skip(true, 'Upgrade button not available (user might already be on Pro tier)');
@@ -165,9 +172,9 @@ test.describe('Subscription Upgrade Flow', () => {
       // Find and click Pro tier upgrade button
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
       const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro/i });
-      
-      const buttonExists = await upgradeButton.count().then(count => count > 0);
-      
+
+      const buttonExists = await upgradeButton.count().then((count) => count > 0);
+
       if (!buttonExists) {
         test.skip(true, 'Upgrade button not available (user might already be on Pro tier)');
         return;
@@ -188,7 +195,7 @@ test.describe('Subscription Upgrade Flow', () => {
         // Wait for email field (might be pre-filled)
         const emailField = checkoutPage.locator('input[type="email"]').first();
         await emailField.waitFor({ state: 'visible', timeout: 10000 });
-        
+
         // Fill email if not pre-filled
         const emailValue = await emailField.inputValue();
         if (!emailValue) {
@@ -203,7 +210,7 @@ test.describe('Subscription Upgrade Flow', () => {
 
         // Billing details
         await checkoutPage.locator('input[name="billingName"]').fill(TEST_BILLING_DETAILS.name);
-        
+
         const zipField = checkoutPage.locator('input[name="zip"]');
         if (await zipField.isVisible()) {
           await zipField.fill(TEST_BILLING_DETAILS.zip);
@@ -232,15 +239,14 @@ test.describe('Subscription Upgrade Flow', () => {
         await page.waitForURL('/dashboard', { timeout: 35000 });
 
         // Verify subscription tier is updated to Pro
-        const subscriptionCard = page.locator('[class*="card"]').filter({ 
-          hasText: /subscription plan/i 
+        const subscriptionCard = page.locator('[class*="card"]').filter({
+          hasText: /subscription plan/i,
         });
         await expect(subscriptionCard).toContainText(/pro/i, { timeout: 10000 });
 
         // Upgrade banner should no longer be visible
         const upgradeBanner = page.getByText(/upgrade to pro/i).first();
         await expect(upgradeBanner).not.toBeVisible();
-
       } catch (error) {
         // Close checkout page if still open
         if (!checkoutPage.isClosed()) {
@@ -260,9 +266,9 @@ test.describe('Subscription Upgrade Flow', () => {
 
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
       const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro/i });
-      
-      const buttonExists = await upgradeButton.count().then(count => count > 0);
-      
+
+      const buttonExists = await upgradeButton.count().then((count) => count > 0);
+
       if (!buttonExists) {
         test.skip(true, 'Upgrade button not available');
         return;
@@ -276,11 +282,11 @@ test.describe('Subscription Upgrade Flow', () => {
 
       // Look for back/cancel button on Stripe checkout
       const backButton = checkoutPage.getByRole('link', { name: /back|cancel/i });
-      const backExists = await backButton.count().then(count => count > 0);
-      
+      const backExists = await backButton.count().then((count) => count > 0);
+
       if (backExists) {
         await backButton.click();
-        
+
         // Should redirect to cancel URL (pricing page with cancelled parameter)
         await page.waitForURL(/\/pricing\?upgrade=cancelled/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/pricing\?upgrade=cancelled/);
@@ -293,10 +299,7 @@ test.describe('Subscription Upgrade Flow', () => {
   });
 
   test.describe('Subscription Status Display', () => {
-    test.skip(
-      !process.env.TEST_USER_EMAIL,
-      'Skipped: TEST_USER_EMAIL not configured'
-    );
+    test.skip(!process.env.TEST_USER_EMAIL, 'Skipped: TEST_USER_EMAIL not configured');
 
     test.beforeEach(async ({ page }) => {
       await loginViaUI(page, TEST_USER.email, TEST_USER.password);
@@ -306,8 +309,8 @@ test.describe('Subscription Upgrade Flow', () => {
       await navigateAndWait(page, '/dashboard');
 
       // Find subscription plan card
-      const subscriptionCard = page.locator('[class*="card"]').filter({ 
-        hasText: /subscription plan/i 
+      const subscriptionCard = page.locator('[class*="card"]').filter({
+        hasText: /subscription plan/i,
       });
       await expect(subscriptionCard).toBeVisible();
 
@@ -318,10 +321,10 @@ test.describe('Subscription Upgrade Flow', () => {
     test('should display subscription status', async ({ page }) => {
       await navigateAndWait(page, '/dashboard');
 
-      const subscriptionCard = page.locator('[class*="card"]').filter({ 
-        hasText: /subscription plan/i 
+      const subscriptionCard = page.locator('[class*="card"]').filter({
+        hasText: /subscription plan/i,
       });
-      
+
       // Should display status (active, canceled, etc.)
       await expect(subscriptionCard).toContainText(/active|canceled|past_due|trialing/i);
     });
@@ -329,13 +332,13 @@ test.describe('Subscription Upgrade Flow', () => {
     test('should show current period end date for active subscriptions', async ({ page }) => {
       await navigateAndWait(page, '/dashboard');
 
-      const subscriptionCard = page.locator('[class*="card"]').filter({ 
-        hasText: /subscription plan/i 
+      const subscriptionCard = page.locator('[class*="card"]').filter({
+        hasText: /subscription plan/i,
       });
-      
+
       // Check if shows "Active until" for paid subscriptions
       const hasActiveUntil = await subscriptionCard.getByText(/active until/i).count();
-      
+
       if (hasActiveUntil > 0) {
         // Should show a date
         await expect(subscriptionCard).toContainText(/\d{1,2}\/\d{1,2}\/\d{2,4}/);
@@ -358,9 +361,9 @@ test.describe('Subscription Upgrade Flow', () => {
 
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
       const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro/i });
-      
-      const buttonExists = await upgradeButton.count().then(count => count > 0);
-      
+
+      const buttonExists = await upgradeButton.count().then((count) => count > 0);
+
       if (!buttonExists) {
         test.skip(true, 'Upgrade button not available');
         return;
@@ -394,7 +397,6 @@ test.describe('Subscription Upgrade Flow', () => {
 
         // Should NOT redirect to success page
         await expect(page).not.toHaveURL(/\/dashboard\?upgrade=success/);
-
       } finally {
         if (!checkoutPage.isClosed()) {
           await checkoutPage.close();
@@ -407,9 +409,9 @@ test.describe('Subscription Upgrade Flow', () => {
 
       const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/i });
       const upgradeButton = proCard.getByRole('button', { name: /upgrade to pro/i });
-      
-      const buttonExists = await upgradeButton.count().then(count => count > 0);
-      
+
+      const buttonExists = await upgradeButton.count().then((count) => count > 0);
+
       if (!buttonExists) {
         test.skip(true, 'Upgrade button not available');
         return;
@@ -439,7 +441,6 @@ test.describe('Subscription Upgrade Flow', () => {
         await expect(
           checkoutPage.getByText(/insufficient funds|card has insufficient/i)
         ).toBeVisible({ timeout: 10000 });
-
       } finally {
         if (!checkoutPage.isClosed()) {
           await checkoutPage.close();
@@ -449,10 +450,7 @@ test.describe('Subscription Upgrade Flow', () => {
   });
 
   test.describe('Billing Management', () => {
-    test.skip(
-      !process.env.TEST_USER_EMAIL,
-      'Skipped: TEST_USER_EMAIL not configured'
-    );
+    test.skip(!process.env.TEST_USER_EMAIL, 'Skipped: TEST_USER_EMAIL not configured');
 
     test.beforeEach(async ({ page }) => {
       await loginViaUI(page, TEST_USER.email, TEST_USER.password);
@@ -463,7 +461,7 @@ test.describe('Subscription Upgrade Flow', () => {
 
       // Look for billing-related links
       const billingLink = page.getByRole('link', { name: /billing|subscription/i });
-      const linkExists = await billingLink.count().then(count => count > 0);
+      const linkExists = await billingLink.count().then((count) => count > 0);
 
       if (linkExists) {
         await expect(billingLink.first()).toBeVisible();
@@ -473,7 +471,10 @@ test.describe('Subscription Upgrade Flow', () => {
     test('should navigate to settings when clicking settings link', async ({ page }) => {
       await navigateAndWait(page, '/dashboard');
 
-      await page.getByRole('link', { name: /settings/i }).first().click();
+      await page
+        .getByRole('link', { name: /settings/i })
+        .first()
+        .click();
       await expect(page).toHaveURL(/\/dashboard\/settings/);
     });
   });

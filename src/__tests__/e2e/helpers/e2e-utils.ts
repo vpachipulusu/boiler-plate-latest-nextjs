@@ -20,11 +20,7 @@ export const TEST_ADMIN = {
  * Log in a user via the login form UI.
  * Use this when testing the actual login flow.
  */
-export async function loginViaUI(
-  page: Page,
-  email: string,
-  password: string
-): Promise<void> {
+export async function loginViaUI(page: Page, email: string, password: string): Promise<void> {
   await page.goto('/login');
   await page.waitForLoadState('networkidle');
 
@@ -70,7 +66,9 @@ export async function expectRedirectToLogin(page: Page, path: string): Promise<v
  * Assert that a toast notification appears with the expected text.
  */
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
-  const toast = page.locator('[data-sonner-toast], [role="status"], [data-radix-toast-viewport] li');
+  const toast = page.locator(
+    '[data-sonner-toast], [role="status"], [data-radix-toast-viewport] li'
+  );
   await expect(toast.filter({ hasText: text }).first()).toBeVisible({ timeout: 5_000 });
 }
 

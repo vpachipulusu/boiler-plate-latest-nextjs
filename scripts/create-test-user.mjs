@@ -2,13 +2,13 @@
 
 /**
  * Create Test User for E2E Subscription Tests
- * 
+ *
  * This script creates a test user with free tier subscription
  * for use in end-to-end subscription upgrade tests.
- * 
+ *
  * Usage:
  *   node scripts/create-test-user.mjs
- * 
+ *
  * Environment Variables:
  *   TEST_USER_EMAIL - Email for test user (default: testuser@example.com)
  *   TEST_USER_PASSWORD - Password for test user (default: TestPass123!)
@@ -29,9 +29,7 @@ const prisma = new PrismaClient();
 
 async function initializeFirebase() {
   if (admin.apps.length === 0) {
-    const serviceAccount = JSON.parse(
-      process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}'
-    );
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}');
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -70,7 +68,7 @@ async function createTestUser() {
 
     if (dbUser) {
       console.log(`✓ Database user already exists: ${dbUser.id}`);
-      
+
       // Update to ensure user is on free tier
       dbUser = await prisma.user.update({
         where: { id: dbUser.id },
@@ -122,7 +120,6 @@ async function createTestUser() {
     console.log(`  Status:   ${dbUser.subscriptionStatus}`);
     console.log('\nYou can now run subscription E2E tests:');
     console.log('  npm run test:e2e -- subscription\n');
-
   } catch (error) {
     console.error('❌ Error creating test user:', error);
     throw error;

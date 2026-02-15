@@ -49,7 +49,7 @@ export function verifyWebhookSignature(payload: string | Buffer, signature: stri
  */
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
   console.log('Processing checkout.session.completed event:', session.id);
-  
+
   const userId = session.metadata?.userId;
 
   if (!userId) {
@@ -71,12 +71,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   const priceId = subscription.items.data[0]?.price.id;
   const tier = getSubscriptionTier(priceId || '');
 
-  console.log('Subscription details:', { 
-    userId, 
-    subscriptionId, 
-    priceId, 
+  console.log('Subscription details:', {
+    userId,
+    subscriptionId,
+    priceId,
     tier,
-    status: subscription.status 
+    status: subscription.status,
   });
 
   // Update user in database

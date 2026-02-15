@@ -7,7 +7,9 @@ Comprehensive end-to-end tests for the subscription upgrade functionality, cover
 ## Test Files
 
 ### 1. `subscription.spec.ts` - Comprehensive Test Suite
+
 Complete test coverage including:
+
 - ✅ Unauthenticated user flow (redirect to signup)
 - ✅ Authenticated user upgrade flow
 - ✅ Stripe checkout integration
@@ -19,13 +21,17 @@ Complete test coverage including:
 - ✅ Multiple Stripe test card scenarios
 
 ### 2. `subscription-simple.spec.ts` - Happy Path Test
+
 Focused test for the critical happy path:
+
 - Login → Pricing → Upgrade → Checkout → Success → Verification
 
 ## Prerequisites
 
 ### 1. Environment Variables
+
 Required in `.env.local`:
+
 ```env
 # Test user credentials
 TEST_USER_EMAIL=testuser@example.com
@@ -44,7 +50,9 @@ STRIPE_PRICE_ID_ENTERPRISE_YEARLY=price_...
 ```
 
 ### 2. Test User Setup
+
 Create a test user in your database with:
+
 - Email: Value from `TEST_USER_EMAIL`
 - Password: Value from `TEST_USER_PASSWORD`
 - Subscription Tier: `free`
@@ -53,6 +61,7 @@ Create a test user in your database with:
 You can use the signup flow or seed script to create this user.
 
 ### 3. Stripe Test Mode
+
 - All tests use **Stripe test mode** with test API keys
 - No real charges will be made
 - Test cards are used for payment simulation
@@ -61,25 +70,27 @@ You can use the signup flow or seed script to create this user.
 
 The tests use official Stripe test cards:
 
-| Card Number | Scenario |
-|-------------|----------|
-| `4242424242424242` | ✅ Successful payment |
-| `4000000000000002` | ❌ Card declined |
-| `4000000000009995` | ❌ Insufficient funds |
-| `4000000000000069` | ❌ Expired card |
+| Card Number        | Scenario                               |
+| ------------------ | -------------------------------------- |
+| `4242424242424242` | ✅ Successful payment                  |
+| `4000000000000002` | ❌ Card declined                       |
+| `4000000000009995` | ❌ Insufficient funds                  |
+| `4000000000000069` | ❌ Expired card                        |
 | `4000002500003155` | 🔐 Requires authentication (3D Secure) |
-| `4000000000000119` | ⚠️ Processing error |
+| `4000000000000119` | ⚠️ Processing error                    |
 
 See: https://stripe.com/docs/testing#cards
 
 ## Running the Tests
 
 ### Run All Subscription Tests
+
 ```bash
 npm run test:e2e -- subscription
 ```
 
 ### Run Specific Test File
+
 ```bash
 # Comprehensive tests
 npm run test:e2e -- subscription.spec.ts
@@ -89,16 +100,19 @@ npm run test:e2e -- subscription-simple.spec.ts
 ```
 
 ### Run in UI Mode (Debug)
+
 ```bash
 npx playwright test subscription --ui
 ```
 
 ### Run in Headed Mode (See Browser)
+
 ```bash
 npx playwright test subscription --headed
 ```
 
 ### Run Specific Browser
+
 ```bash
 # Chrome only
 npx playwright test subscription --project=chromium
@@ -184,36 +198,42 @@ npx playwright test subscription --project=mobile-chrome
 ## What the Tests Verify
 
 ### 1. UI Elements
+
 - ✅ Upgrade banner appears for free tier users
 - ✅ Pricing page displays all tiers correctly
 - ✅ Upgrade button is visible and clickable
 - ✅ Success message appears after payment
 
 ### 2. Stripe Integration
+
 - ✅ Checkout session created with correct price ID
 - ✅ Stripe checkout page loads in new window
 - ✅ Payment form accepts test card data
 - ✅ Successful payment redirects back to app
 
 ### 3. Webhook Processing
+
 - ✅ `checkout.session.completed` event handled
 - ✅ User subscription tier updated in database
 - ✅ Subscription status set to 'active'
 - ✅ Stripe customer ID and subscription ID stored
 
 ### 4. Success Handler
+
 - ✅ Success banner displays with loading state
 - ✅ Polling mechanism checks subscription status
 - ✅ Success state shown when subscription activates
 - ✅ Auto-refresh removes query parameter
 
 ### 5. Dashboard Updates
+
 - ✅ Subscription tier displayed as "Pro"
 - ✅ Subscription status displayed as "active"
 - ✅ Upgrade banner removed after upgrade
 - ✅ Current period end date shown (if applicable)
 
 ### 6. Error Handling
+
 - ✅ Declined card shows error message
 - ✅ Insufficient funds shows error message
 - ✅ Checkout cancellation redirects properly
@@ -222,26 +242,32 @@ npx playwright test subscription --project=mobile-chrome
 ## Troubleshooting
 
 ### Test User Already on Pro Tier
+
 If the test user is already upgraded:
+
 ```bash
 # Reset user to free tier in database
 # Or create a new test user
 ```
 
 ### Stripe Webhook Not Firing
+
 1. Check webhook secret is correct
 2. Verify webhook endpoint is reachable
 3. Use Stripe CLI for local testing:
+
 ```bash
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 ### Timeout Errors
+
 - Increase timeout in test if webhook processing is slow
 - Check server logs for webhook errors
 - Verify database connection is working
 
 ### Checkout Window Not Opening
+
 - Check popup blocker settings
 - Verify Stripe publishable key is correct
 - Ensure test mode keys are being used
@@ -249,6 +275,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ## Test Data Cleanup
 
 After running tests, you may want to:
+
 1. Reset test user subscription tier to `free`
 2. Delete Stripe test subscriptions
 3. Clear audit logs created during testing
@@ -256,6 +283,7 @@ After running tests, you may want to:
 ## CI/CD Integration
 
 These tests are configured to run in CI:
+
 ```yaml
 # GitHub Actions example
 - name: Run E2E Tests
@@ -278,6 +306,7 @@ These tests are configured to run in CI:
 ## Contributing
 
 When adding new subscription features:
+
 1. Add corresponding E2E tests
 2. Use Stripe test cards for payment scenarios
 3. Verify webhook handling

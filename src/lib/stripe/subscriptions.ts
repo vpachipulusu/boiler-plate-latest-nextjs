@@ -266,7 +266,7 @@ export function getSubscriptionTier(priceId: string): string {
   ) {
     return 'pro';
   }
-  
+
   // Check Enterprise tier (monthly and yearly)
   if (
     priceId === process.env.STRIPE_PRICE_ID_ENTERPRISE ||
@@ -275,12 +275,12 @@ export function getSubscriptionTier(priceId: string): string {
   ) {
     return 'enterprise';
   }
-  
+
   // Check Free tier
   if (priceId === process.env.STRIPE_PRICE_ID_FREE) {
     return 'free';
   }
-  
+
   // Default to free if price ID doesn't match any known tier
   return 'free';
 }

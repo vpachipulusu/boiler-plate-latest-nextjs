@@ -94,7 +94,7 @@ export default async function DashboardPage({
 }) {
   // Await searchParams as per Next.js 15 requirements
   await searchParams;
-  
+
   const user = await getUserData();
 
   if (!user) {
