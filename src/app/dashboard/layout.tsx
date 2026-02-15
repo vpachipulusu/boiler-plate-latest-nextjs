@@ -29,18 +29,26 @@ async function getUser() {
       select: { id: true, displayName: true, avatarUrl: true },
     });
 
-    // Get unread notification count
-    const unreadNotificationCount = dbUser
-      ? await db.notification.count({
-          where: { userId: dbUser.id, read: false },
-        })
-      : 0;
+    // Get unread notification count and recent notifications
+    const [unreadNotificationCount, recentNotifications] = dbUser
+      ? await Promise.all([
+          db.notification.count({
+            where: { userId: dbUser.id, read: false },
+          }),
+          db.notification.findMany({
+            where: { userId: dbUser.id },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          }),
+        ])
+      : [0, []];
 
     return {
       ...decodedClaims,
       dbDisplayName: dbUser?.displayName,
       dbAvatarUrl: dbUser?.avatarUrl,
       unreadNotificationCount,
+      recentNotifications,
     };
   } catch (error) {
     // Expired/invalid session — clear cookies via route handler and redirect to login
@@ -98,6 +106,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               dbDisplayName: user.dbDisplayName,
               dbAvatarUrl: user.dbAvatarUrl,
               unreadNotificationCount: user.unreadNotificationCount,
+              recentNotifications: user.recentNotifications,
             }}
           />
         </div>

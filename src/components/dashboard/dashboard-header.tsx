@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Bell, LayoutDashboard, User, Shield, LogOut } from 'lucide-react';
+import { LayoutDashboard, User, Shield, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { logoutAction } from '@/app/actions/auth-actions';
+import { NotificationsDropdown } from './notifications-dropdown';
 
 interface DashboardHeaderProps {
   user: {
@@ -21,6 +22,15 @@ interface DashboardHeaderProps {
     dbDisplayName?: string | null;
     dbAvatarUrl?: string | null;
     unreadNotificationCount: number;
+    recentNotifications: Array<{
+      id: string;
+      type: string;
+      title: string;
+      message: string;
+      read: boolean;
+      link: string | null;
+      createdAt: Date;
+    }>;
   };
 }
 
@@ -33,14 +43,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   return (
     <div className="flex items-center gap-4">
       {/* Notifications */}
-      <Button variant="ghost" size="icon" className="relative hover:bg-accent">
-        <Bell className="h-5 w-5" />
-        {user.unreadNotificationCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-lg">
-            {user.unreadNotificationCount > 9 ? '9+' : user.unreadNotificationCount}
-          </span>
-        )}
-      </Button>
+      <NotificationsDropdown
+        notifications={user.recentNotifications}
+        unreadCount={user.unreadNotificationCount}
+      />
 
       {/* User Menu */}
       <DropdownMenu>
