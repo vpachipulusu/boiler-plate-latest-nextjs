@@ -85,9 +85,17 @@ npm run test:reset
 - Click "Upgrade to Pro"
 - Complete Stripe checkout with test card
 - Verify success redirect
-- Verify webhook processing
-- Verify subscription updated
+- Verify webhook processing **immediately updates database**
+- Verify subscription updated **without admin action**
 - Verify dashboard shows Pro tier
+
+✅ **Admin Panel Verification**
+
+- Subscriptions appear in admin panel immediately
+- No manual approval required
+- Stats updated automatically via webhook
+- Refresh button for manual updates
+- Empty state when no subscriptions
 
 ✅ **Error Scenarios**
 

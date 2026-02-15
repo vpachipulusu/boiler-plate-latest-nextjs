@@ -5,6 +5,7 @@
  */
 
 import Stripe from 'stripe';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { getSubscriptionTier } from './subscriptions';
 import { notifySubscriptionChanged, notifyPaymentFailed } from '@/lib/utils/notifications';
@@ -108,6 +109,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
     },
   });
 
+  // Revalidate admin and dashboard pages to show updated subscription
+  try {
+    revalidatePath('/admin/subscriptions');
+    revalidatePath('/dashboard');
+    console.log('Revalidated admin and dashboard pages');
+  } catch (error) {
+    console.error('Error revalidating paths:', error);
+  }
+
   console.log(`Subscription created for user ${userId} with tier ${tier}`);
 }
 
@@ -160,6 +170,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   // Notify user about subscription change
   await notifySubscriptionChanged(user.id, getSubscriptionTier(priceId || ''));
 
+  // Revalidate pages
+  try {
+    revalidatePath('/admin/subscriptions');
+    revalidatePath('/dashboard');
+  } catch (error) {
+    console.error('Error revalidating paths:', error);
+  }
+
   console.log(`Subscription updated for user ${user.id}`);
 }
 
@@ -202,6 +220,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
 
   // Notify user about subscription cancellation
   await notifySubscriptionChanged(user.id, 'free');
+
+  // Revalidate pages
+  try {
+    revalidatePath('/admin/subscriptions');
+    revalidatePath('/dashboard');
+  } catch (error) {
+    console.error('Error revalidating paths:', error);
+  }
 
   console.log(`Subscription canceled for user ${user.id}`);
 }

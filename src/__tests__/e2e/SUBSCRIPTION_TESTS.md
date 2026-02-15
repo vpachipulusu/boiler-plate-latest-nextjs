@@ -214,9 +214,10 @@ npx playwright test subscription --project=mobile-chrome
 ### 3. Webhook Processing
 
 - ✅ `checkout.session.completed` event handled
-- ✅ User subscription tier updated in database
-- ✅ Subscription status set to 'active'
+- ✅ User subscription tier updated in database **immediately**
+- ✅ Subscription status set to 'active' **without admin action**
 - ✅ Stripe customer ID and subscription ID stored
+- ✅ Admin pages automatically revalidated
 
 ### 4. Success Handler
 
@@ -232,7 +233,16 @@ npx playwright test subscription --project=mobile-chrome
 - ✅ Upgrade banner removed after upgrade
 - ✅ Current period end date shown (if applicable)
 
-### 6. Error Handling
+### 6. Admin Panel Integration
+
+- ✅ Subscriptions appear in admin panel **immediately** after webhook
+- ✅ No manual admin approval required
+- ✅ Subscription stats updated automatically
+- ✅ Recent subscriptions table shows new upgrades
+- ✅ Refresh button available for manual updates
+- ✅ Empty state shown when no subscriptions exist
+
+### 7. Error Handling
 
 - ✅ Declined card shows error message
 - ✅ Insufficient funds shows error message

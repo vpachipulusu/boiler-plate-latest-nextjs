@@ -5,6 +5,7 @@ import { z } from 'zod';
 import Stripe from 'stripe';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import crypto from 'crypto';
 
 /**
  * Initialize Stripe
@@ -231,6 +232,28 @@ export async function createCheckoutSessionAction(
       },
     });
 
+    // Generate secure checkout token to prevent URL manipulation
+    const checkoutToken = crypto.randomBytes(32).toString('hex');
+    const cookieStore = await cookies();
+
+    // Store checkout token in HTTP-only cookie (expires in 10 minutes)
+    cookieStore.set('checkout_token', checkoutToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 600, // 10 minutes
+      path: '/',
+    });
+
+    // Store session ID mapping
+    cookieStore.set('checkout_session', session.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 600, // 10 minutes
+      path: '/',
+    });
+
     return {
       success: true,
       data: {
@@ -243,6 +266,85 @@ export async function createCheckoutSessionAction(
     return {
       success: false,
       error: error.message || 'Failed to create checkout session',
+    };
+  }
+}
+
+/**
+ * Verify checkout session for upgrade success
+ * Prevents users from manually navigating to ?upgrade=success
+ */
+export async function verifyUpgradeSessionAction(): Promise<
+  SubscriptionActionResponse<{
+    valid: boolean;
+    reason?: string;
+  }>
+> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
+    const cookieStore = await cookies();
+    const checkoutToken = cookieStore.get('checkout_token')?.value;
+    const checkoutSession = cookieStore.get('checkout_session')?.value;
+
+    // If no checkout token, this is a manual/fake URL
+    if (!checkoutToken || !checkoutSession) {
+      return {
+        success: true,
+        data: {
+          valid: false,
+          reason: 'No valid checkout session found',
+        },
+      };
+    }
+
+    // Check if user's subscription was recently updated (within last 5 minutes)
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscriptionTier: true,
+        subscriptionStatus: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not found',
+      };
+    }
+
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const wasRecentlyUpdated = user.updatedAt > fiveMinutesAgo;
+
+    // Valid if: has checkout token AND (subscription was recently updated OR is already upgraded)
+    const isValid = checkoutToken && (wasRecentlyUpdated || user.subscriptionTier !== 'free');
+
+    // Clear checkout tokens after verification
+    if (isValid) {
+      cookieStore.delete('checkout_token');
+      cookieStore.delete('checkout_session');
+    }
+
+    return {
+      success: true,
+      data: {
+        valid: isValid,
+        reason: isValid ? undefined : 'Invalid or expired checkout session',
+      },
+    };
+  } catch (error: any) {
+    console.error('Verify upgrade session error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to verify upgrade session',
     };
   }
 }
