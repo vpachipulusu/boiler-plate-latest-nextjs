@@ -49,10 +49,25 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 }
 
 /**
+ * Server-side price ID mapping (env vars are only available on the server)
+ */
+const PRICE_IDS: Record<string, { monthly: string; yearly: string }> = {
+  pro: {
+    monthly: process.env.STRIPE_PRICE_ID_PRO_MONTHLY || '',
+    yearly: process.env.STRIPE_PRICE_ID_PRO_YEARLY || '',
+  },
+  enterprise: {
+    monthly: process.env.STRIPE_PRICE_ID_ENTERPRISE_MONTHLY || '',
+    yearly: process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY || '',
+  },
+};
+
+/**
  * Create checkout session schema
  */
 const createCheckoutSessionSchema = z.object({
-  priceId: z.string(),
+  tier: z.enum(['pro', 'enterprise']),
+  billingPeriod: z.enum(['monthly', 'yearly']),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 });
@@ -128,7 +143,8 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
  * Create Stripe checkout session
  */
 export async function createCheckoutSessionAction(
-  priceId: string,
+  tier: 'pro' | 'enterprise',
+  billingPeriod: 'monthly' | 'yearly',
   successUrl: string,
   cancelUrl: string
 ): Promise<SubscriptionActionResponse> {
@@ -143,7 +159,8 @@ export async function createCheckoutSessionAction(
 
     // Validate input
     const validation = createCheckoutSessionSchema.safeParse({
-      priceId,
+      tier,
+      billingPeriod,
       successUrl,
       cancelUrl,
     });
@@ -152,6 +169,15 @@ export async function createCheckoutSessionAction(
       return {
         success: false,
         error: validation.error.errors[0].message,
+      };
+    }
+
+    // Resolve price ID on the server
+    const priceId = PRICE_IDS[tier]?.[billingPeriod];
+    if (!priceId) {
+      return {
+        success: false,
+        error: `Price not configured for ${tier} ${billingPeriod} plan`,
       };
     }
 

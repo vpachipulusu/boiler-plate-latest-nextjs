@@ -8,7 +8,6 @@ import { Check, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createCheckoutSessionAction } from '@/app/actions/subscription-actions';
 import { useState } from 'react';
-import { subscriptionPlans } from '@/config/subscriptions';
 
 interface PricingCardProps {
   tier: {
@@ -46,15 +45,10 @@ export function PricingCard({ tier, isAuthenticated, userTier }: PricingCardProp
       setIsLoading(true);
 
       try {
-        // Find the Pro plan config
-        const proPlan = subscriptionPlans.find((p) => p.name === 'Pro');
-        if (!proPlan || !proPlan.stripePriceId.monthly) {
-          throw new Error('Pro plan configuration not found');
-        }
-
-        // Create checkout session
+        // Create checkout session - price ID is resolved server-side
         const result = await createCheckoutSessionAction(
-          proPlan.stripePriceId.monthly,
+          'pro',
+          'monthly',
           `${window.location.origin}/dashboard?upgrade=success`,
           `${window.location.origin}/pricing?upgrade=cancelled`
         );
