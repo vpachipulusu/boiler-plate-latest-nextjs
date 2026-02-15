@@ -46,6 +46,7 @@ When you ask GitHub Copilot to perform tasks related to these domains, it will a
 ## Project Context
 
 This is a Next.js SaaS boilerplate with the following stack:
+
 - Next.js 14+ with App Router
 - TypeScript
 - Tailwind CSS
