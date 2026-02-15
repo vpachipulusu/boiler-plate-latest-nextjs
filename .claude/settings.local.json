@@ -21,7 +21,9 @@
       "Bash(npx tsc:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm test)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(powershell:*)",
+      "Bash(del \"c:\\\\MainData\\\\NewSourceCode\\\\boiler-plate-latest-nextjs\\\\add-path.ps1\")"
     ]
   }
 }

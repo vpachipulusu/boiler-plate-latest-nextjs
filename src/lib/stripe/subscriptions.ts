@@ -258,15 +258,30 @@ export async function getSubscription(userId: string): Promise<Stripe.Subscripti
  * Get subscription tier from price ID
  */
 export function getSubscriptionTier(priceId: string): string {
-  if (priceId === process.env.STRIPE_PRICE_ID_ENTERPRISE) {
-    return 'enterprise';
-  }
-  if (priceId === process.env.STRIPE_PRICE_ID_PRO) {
+  // Check Pro tier (monthly and yearly)
+  if (
+    priceId === process.env.STRIPE_PRICE_ID_PRO ||
+    priceId === process.env.STRIPE_PRICE_ID_PRO_MONTHLY ||
+    priceId === process.env.STRIPE_PRICE_ID_PRO_YEARLY
+  ) {
     return 'pro';
   }
+  
+  // Check Enterprise tier (monthly and yearly)
+  if (
+    priceId === process.env.STRIPE_PRICE_ID_ENTERPRISE ||
+    priceId === process.env.STRIPE_PRICE_ID_ENTERPRISE_MONTHLY ||
+    priceId === process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY
+  ) {
+    return 'enterprise';
+  }
+  
+  // Check Free tier
   if (priceId === process.env.STRIPE_PRICE_ID_FREE) {
     return 'free';
   }
+  
+  // Default to free if price ID doesn't match any known tier
   return 'free';
 }
 

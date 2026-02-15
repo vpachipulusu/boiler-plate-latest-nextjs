@@ -48,23 +48,36 @@ export function verifyWebhookSignature(payload: string | Buffer, signature: stri
  * Handle checkout session completed
  */
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  console.log('Processing checkout.session.completed event:', session.id);
+  
   const userId = session.metadata?.userId;
 
   if (!userId) {
-    console.error('No userId in session metadata');
+    console.error('No userId in session metadata', { sessionId: session.id });
     return;
   }
 
   const subscriptionId = session.subscription as string;
 
   if (!subscriptionId) {
-    console.error('No subscription ID in session');
+    console.error('No subscription ID in session', { sessionId: session.id, userId });
     return;
   }
+
+  console.log('Retrieving subscription details:', { userId, subscriptionId });
 
   // Retrieve subscription details
   const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
   const priceId = subscription.items.data[0]?.price.id;
+  const tier = getSubscriptionTier(priceId || '');
+
+  console.log('Subscription details:', { 
+    userId, 
+    subscriptionId, 
+    priceId, 
+    tier,
+    status: subscription.status 
+  });
 
   // Update user in database
   await db.user.update({
@@ -73,11 +86,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
       stripeCustomerId: session.customer as string,
       stripeSubscriptionId: subscriptionId,
       stripePriceId: priceId,
-      subscriptionTier: getSubscriptionTier(priceId || ''),
+      subscriptionTier: tier,
       subscriptionStatus: subscription.status,
       stripeCurrentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
+
+  console.log('User subscription updated successfully:', { userId, tier });
 
   // Create audit log
   await db.auditLog.create({
@@ -88,12 +103,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
       resourceId: subscriptionId,
       metadata: {
         priceId,
-        tier: getSubscriptionTier(priceId || ''),
+        tier,
       },
     },
   });
 
-  console.log(`Subscription created for user ${userId}`);
+  console.log(`Subscription created for user ${userId} with tier ${tier}`);
 }
 
 /**

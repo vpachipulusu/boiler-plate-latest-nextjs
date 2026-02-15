@@ -104,3 +104,116 @@ export async function navigateAndWait(page: Page, path: string): Promise<void> {
   await page.goto(path);
   await waitForPageReady(page);
 }
+
+/**
+ * Stripe test card numbers for testing payment flows.
+ * @see https://stripe.com/docs/testing#cards
+ */
+export const STRIPE_TEST_CARDS = {
+  success: '4242424242424242',
+  requiresAuth: '4000002500003155',
+  declined: '4000000000000002',
+  insufficientFunds: '4000000000009995',
+  expired: '4000000000000069',
+  processingError: '4000000000000119',
+} as const;
+
+/**
+ * Default test billing details for Stripe checkout.
+ */
+export const TEST_BILLING_DETAILS = {
+  email: 'test@example.com',
+  cardNumber: STRIPE_TEST_CARDS.success,
+  expiry: '12/34',
+  cvc: '123',
+  zip: '12345',
+  name: 'Test User',
+  country: 'US',
+} as const;
+
+/**
+ * Fill Stripe checkout form with test card details.
+ * Handles the iframe structure of Stripe's checkout page.
+ */
+export async function fillStripeCheckout(
+  checkoutPage: Page,
+  cardNumber: string = STRIPE_TEST_CARDS.success,
+  billingDetails = TEST_BILLING_DETAILS
+): Promise<void> {
+  // Wait for email field
+  const emailField = checkoutPage.locator('input[type="email"]').first();
+  await emailField.waitFor({ state: 'visible', timeout: 10000 });
+
+  // Fill email if not pre-filled
+  const emailValue = await emailField.inputValue();
+  if (!emailValue) {
+    await emailField.fill(billingDetails.email);
+  }
+
+  // Fill card details in iframe
+  const cardFrame = checkoutPage.frameLocator('iframe[name*="card"]').first();
+  await cardFrame.locator('input[name="number"]').fill(cardNumber);
+  await cardFrame.locator('input[name="expiry"]').fill(billingDetails.expiry);
+  await cardFrame.locator('input[name="cvc"]').fill(billingDetails.cvc);
+
+  // Fill billing name
+  const nameField = checkoutPage.locator('input[name="billingName"]');
+  if (await nameField.isVisible().catch(() => false)) {
+    await nameField.fill(billingDetails.name);
+  }
+
+  // Fill zip code if visible
+  const zipField = checkoutPage.locator('input[name="zip"]');
+  if (await zipField.isVisible().catch(() => false)) {
+    await zipField.fill(billingDetails.zip);
+  }
+}
+
+/**
+ * Submit Stripe checkout payment form.
+ */
+export async function submitStripeCheckout(checkoutPage: Page): Promise<void> {
+  const submitButton = checkoutPage.getByRole('button', { name: /pay|subscribe/i });
+  await submitButton.click();
+}
+
+/**
+ * Wait for subscription success redirect and processing.
+ * Returns true if subscription was successfully activated.
+ */
+export async function waitForSubscriptionSuccess(
+  page: Page,
+  timeoutMs: number = 40000
+): Promise<boolean> {
+  try {
+    // Wait for redirect to dashboard with success parameter
+    await page.waitForURL(/\/dashboard\?upgrade=success/, { timeout: timeoutMs });
+
+    // Should show processing or success message
+    await expect(
+      page.getByText(/processing your subscription|subscription activated/i)
+    ).toBeVisible({ timeout: 10000 });
+
+    // Wait for polling to complete and auto-refresh
+    // SubscriptionSuccessHandler polls every 3s for up to 30s, then refreshes
+    await page.waitForURL('/dashboard', { timeout: 35000 });
+
+    return true;
+  } catch (error) {
+    console.error('Failed to wait for subscription success:', error);
+    return false;
+  }
+}
+
+/**
+ * Verify subscription tier is displayed correctly on dashboard.
+ */
+export async function expectSubscriptionTier(
+  page: Page,
+  tier: 'free' | 'pro' | 'enterprise'
+): Promise<void> {
+  const subscriptionCard = page.locator('[class*="card"]').filter({
+    hasText: /subscription plan/i,
+  });
+  await expect(subscriptionCard).toContainText(new RegExp(tier, 'i'), { timeout: 10000 });
+}

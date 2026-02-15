@@ -22,6 +22,12 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { SubscriptionSuccessHandler } from '@/components/dashboard/subscription-success-handler';
+import { Suspense } from 'react';
+
+// Disable caching for this page to ensure fresh subscription data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getUserData() {
   try {
@@ -81,7 +87,14 @@ async function getStats(user: any) {
   };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  // Await searchParams as per Next.js 15 requirements
+  await searchParams;
+  
   const user = await getUserData();
 
   if (!user) {
@@ -95,6 +108,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Subscription Success Handler */}
+      <Suspense fallback={null}>
+        <SubscriptionSuccessHandler />
+      </Suspense>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
