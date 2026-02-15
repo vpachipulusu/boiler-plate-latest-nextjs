@@ -12,7 +12,10 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { markNotificationAsReadAction, markAllNotificationsAsReadAction } from '@/app/actions/notification-actions';
+import {
+  markNotificationAsReadAction,
+  markAllNotificationsAsReadAction,
+} from '@/app/actions/notification-actions';
 import { useRouter } from 'next/navigation';
 
 interface Notification {
@@ -38,7 +41,7 @@ export function NotificationsDropdown({ notifications, unreadCount }: Notificati
     try {
       await markNotificationAsReadAction(notificationId);
       router.refresh();
-      
+
       if (link) {
         router.push(link);
         setIsOpen(false);
@@ -115,7 +118,7 @@ export function NotificationsDropdown({ notifications, unreadCount }: Notificati
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Bell className="mb-2 h-8 w-8 text-muted-foreground" />
@@ -146,9 +149,7 @@ export function NotificationsDropdown({ notifications, unreadCount }: Notificati
                     <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
                   )}
                 </div>
-                {!notification.read && (
-                  <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                )}
+                {!notification.read && <div className="ml-auto h-2 w-2 rounded-full bg-primary" />}
               </DropdownMenuItem>
             ))}
           </ScrollArea>
