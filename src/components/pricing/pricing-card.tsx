@@ -73,7 +73,10 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier, b
   const getCTAConfig = () => {
     if (tier.name === 'Free') {
       if (isAuthenticated) {
-        return { text: 'Current Plan', disabled: userTier === 'free', href: '/dashboard' };
+        if (userTier === 'free') {
+          return { text: 'Current Plan', disabled: true, href: '#' };
+        }
+        return { text: 'Downgrade', disabled: false, href: '/dashboard/settings/billing' };
       }
       return { text: tier.cta, disabled: false, href: tier.href };
     }

@@ -142,7 +142,9 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
           status: subscription.status,
           currentPeriodEnd: getSubscriptionPeriodEnd(subscription)?.toISOString() ?? null,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+          canceledAt: subscription.canceled_at
+            ? new Date(subscription.canceled_at * 1000).toISOString()
+            : null,
         };
       } catch (error) {
         console.error('Failed to retrieve Stripe subscription:', error);
@@ -502,14 +504,16 @@ export async function resumeSubscriptionAction(): Promise<SubscriptionActionResp
     if (currentSub.status === 'canceled') {
       return {
         success: false,
-        error: 'This subscription has already been canceled and cannot be resumed. Please subscribe again from the pricing page.',
+        error:
+          'This subscription has already been canceled and cannot be resumed. Please subscribe again from the pricing page.',
       };
     }
 
     if (currentSub.status === 'incomplete' || currentSub.status === 'incomplete_expired') {
       return {
         success: false,
-        error: 'This subscription was never completed. Please subscribe again from the pricing page.',
+        error:
+          'This subscription was never completed. Please subscribe again from the pricing page.',
       };
     }
 
@@ -861,9 +865,9 @@ export async function getPaymentMethodsAction(): Promise<SubscriptionActionRespo
     const customer = await stripe.customers.retrieve(user.stripeCustomerId);
     const defaultPaymentMethodId =
       !customer.deleted && customer.invoice_settings?.default_payment_method
-        ? (typeof customer.invoice_settings.default_payment_method === 'string'
-            ? customer.invoice_settings.default_payment_method
-            : customer.invoice_settings.default_payment_method.id)
+        ? typeof customer.invoice_settings.default_payment_method === 'string'
+          ? customer.invoice_settings.default_payment_method
+          : customer.invoice_settings.default_payment_method.id
         : null;
 
     // List payment methods
@@ -923,7 +927,8 @@ export async function deletePaymentMethodAction(
       if (!subscription.cancel_at_period_end && subscription.status === 'active') {
         return {
           success: false,
-          error: 'Cannot delete payment method while auto-renewal is active. Turn off auto-renewal first.',
+          error:
+            'Cannot delete payment method while auto-renewal is active. Turn off auto-renewal first.',
         };
       }
     }
@@ -931,13 +936,16 @@ export async function deletePaymentMethodAction(
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const pmCustomerId = extractCustomerId(pm.customer as any);
-    
+
     if (!pmCustomerId) {
       return { success: false, error: 'Payment method is not attached to any customer' };
     }
-    
+
     if (pmCustomerId !== user.stripeCustomerId) {
-      return { success: false, error: 'Payment method not found or does not belong to your account' };
+      return {
+        success: false,
+        error: 'Payment method not found or does not belong to your account',
+      };
     }
 
     await stripe.paymentMethods.detach(paymentMethodId);
@@ -977,7 +985,7 @@ export async function setDefaultPaymentMethodAction(
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const pmCustomerId = extractCustomerId(pm.customer as any);
-    
+
     // If payment method is not attached to a customer, attach it first
     if (!pm.customer) {
       await stripe.paymentMethods.attach(paymentMethodId, {

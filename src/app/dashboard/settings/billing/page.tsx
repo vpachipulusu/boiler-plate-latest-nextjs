@@ -14,13 +14,7 @@ import {
   createBillingPortalSessionAction,
 } from '@/app/actions/subscription-actions';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
@@ -33,7 +27,6 @@ import {
   Star,
   Download,
   ExternalLink,
-  AlertCircle,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -110,10 +103,14 @@ export default function BillingPage() {
     if (!subscription) return;
 
     // Don't allow enabling auto-renewal if there's no active subscription
-    if (!subscription.autoRenewal && (!hasActiveSubscription || subscription.subscriptionStatus !== 'active')) {
+    if (
+      !subscription.autoRenewal &&
+      (!hasActiveSubscription || subscription.subscriptionStatus !== 'active')
+    ) {
       toast({
         title: 'Cannot Enable Auto-Renewal',
-        description: 'You need an active subscription to enable auto-renewal. Please upgrade your plan first.',
+        description:
+          'You need an active subscription to enable auto-renewal. Please upgrade your plan first.',
         variant: 'destructive',
       });
       return;
@@ -135,11 +132,19 @@ export default function BillingPage() {
         await loadData();
         router.refresh();
       } else {
-        toast({ title: 'Error', description: result.error || 'Failed to update auto-renewal', variant: 'destructive' });
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to update auto-renewal',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Toggle auto-renewal error:', error);
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setIsTogglingRenewal(false);
     }
@@ -153,11 +158,19 @@ export default function BillingPage() {
         toast({ title: 'Success', description: 'Payment method removed' });
         await loadData();
       } else {
-        toast({ title: 'Error', description: result.error || 'Failed to remove payment method', variant: 'destructive' });
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to remove payment method',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Delete payment method error:', error);
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setDeletingPaymentId(null);
     }
@@ -171,11 +184,19 @@ export default function BillingPage() {
         toast({ title: 'Success', description: 'Default payment method updated' });
         await loadData();
       } else {
-        toast({ title: 'Error', description: result.error || 'Failed to update default payment method', variant: 'destructive' });
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to update default payment method',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Set default payment method error:', error);
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setSettingDefaultId(null);
     }
@@ -189,11 +210,19 @@ export default function BillingPage() {
       if (result.success && result.data?.url) {
         window.location.href = result.data.url;
       } else {
-        toast({ title: 'Error', description: result.error || 'Failed to open billing portal', variant: 'destructive' });
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to open billing portal',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Open billing portal error:', error);
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -207,7 +236,9 @@ export default function BillingPage() {
 
   const isFreeTier = subscription?.subscriptionTier === 'free';
   const hasActiveSubscription = subscription?.subscriptionStatus === 'active' && !isFreeTier;
-  const isCanceling = subscription?.subscriptionStatus === 'canceling' || (!subscription?.autoRenewal && hasActiveSubscription);
+  const isCanceling =
+    subscription?.subscriptionStatus === 'canceling' ||
+    (!subscription?.autoRenewal && hasActiveSubscription);
 
   return (
     <div className="space-y-6">
@@ -231,13 +262,15 @@ export default function BillingPage() {
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold capitalize">{subscription?.subscriptionTier} Plan</span>
+                <span className="text-lg font-semibold capitalize">
+                  {subscription?.subscriptionTier} Plan
+                </span>
                 <Badge variant={hasActiveSubscription ? 'default' : 'secondary'}>
-                  {hasActiveSubscription ? 'Active' : subscription?.subscriptionStatus || 'Inactive'}
+                  {hasActiveSubscription
+                    ? 'Active'
+                    : subscription?.subscriptionStatus || 'Inactive'}
                 </Badge>
-                {isCanceling && (
-                  <Badge variant="destructive">Cancels at period end</Badge>
-                )}
+                {isCanceling && <Badge variant="destructive">Cancels at period end</Badge>}
               </div>
               {subscription?.billingPeriod && (
                 <p className="text-sm text-muted-foreground">
@@ -256,11 +289,11 @@ export default function BillingPage() {
                 </p>
               )}
             </div>
-            {isFreeTier && (
-              <Button asChild>
-                <Link href="/pricing">Upgrade Plan</Link>
-              </Button>
-            )}
+            <Button asChild variant={isFreeTier ? 'default' : 'outline'}>
+              <Link href="/pricing">
+                {isFreeTier ? 'Upgrade Plan' : 'Change Plan'}
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -280,9 +313,7 @@ export default function BillingPage() {
           <CardContent>
             <div className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-1">
-                <p className="text-base font-medium">
-                  Auto-Renewal
-                </p>
+                <p className="text-base font-medium">Auto-Renewal</p>
                 <p className="text-sm text-muted-foreground">
                   {subscription?.autoRenewal
                     ? `Your subscription will renew automatically${subscription?.currentPeriodEnd ? ` on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}` : ' at the end of each billing period'}.`
@@ -335,9 +366,7 @@ export default function BillingPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium capitalize">{pm.brand}</span>
                         <span className="text-muted-foreground">ending in {pm.last4}</span>
-                        {pm.isDefault && (
-                          <Badge variant="secondary">Default</Badge>
-                        )}
+                        {pm.isDefault && <Badge variant="secondary">Default</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Expires {pm.expMonth.toString().padStart(2, '0')}/{pm.expYear}
@@ -360,39 +389,26 @@ export default function BillingPage() {
                         <span className="ml-1">Set Default</span>
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeletePaymentMethod(pm.id)}
-                      disabled={
-                        deletingPaymentId === pm.id ||
-                        (subscription?.autoRenewal === true && hasActiveSubscription === true)
-                      }
-                      title={
-                        subscription?.autoRenewal && hasActiveSubscription
-                          ? 'Turn off auto-renewal to remove payment methods'
-                          : 'Remove payment method'
-                      }
-                    >
-                      {deletingPaymentId === pm.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                      <span className="ml-1">Remove</span>
-                    </Button>
+                    {/* Show remove button unless it's default payment method on a paid plan */}
+                    {(!pm.isDefault || isFreeTier) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePaymentMethod(pm.id)}
+                        disabled={deletingPaymentId === pm.id}
+                        title="Remove payment method"
+                      >
+                        {deletingPaymentId === pm.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        <span className="ml-1">Remove</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
-              {subscription?.autoRenewal && hasActiveSubscription && (
-                <div className="flex items-start gap-2 rounded-lg bg-muted p-3">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Payment methods cannot be removed while auto-renewal is active.
-                    Turn off auto-renewal first to manage your payment methods.
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </CardContent>
@@ -409,9 +425,7 @@ export default function BillingPage() {
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              No invoices yet
-            </p>
+            <p className="py-4 text-center text-sm text-muted-foreground">No invoices yet</p>
           ) : (
             <div className="space-y-3">
               {invoices.map((invoice) => (
@@ -427,9 +441,7 @@ export default function BillingPage() {
                           currency: invoice.currency,
                         })}
                       </span>
-                      <Badge
-                        variant={invoice.status === 'paid' ? 'default' : 'secondary'}
-                      >
+                      <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
                         {invoice.status}
                       </Badge>
                     </div>
