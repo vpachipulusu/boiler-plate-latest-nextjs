@@ -290,9 +290,7 @@ export default function BillingPage() {
               )}
             </div>
             <Button asChild variant={isFreeTier ? 'default' : 'outline'}>
-              <Link href="/pricing">
-                {isFreeTier ? 'Upgrade Plan' : 'Change Plan'}
-              </Link>
+              <Link href="/pricing">{isFreeTier ? 'Upgrade Plan' : 'Change Plan'}</Link>
             </Button>
           </div>
         </CardContent>

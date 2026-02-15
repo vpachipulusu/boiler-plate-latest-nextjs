@@ -26,7 +26,13 @@ interface PricingCardProps {
   billingPeriod?: 'monthly' | 'yearly';
 }
 
-export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier, billingPeriod = 'monthly' }: PricingCardProps) {
+export function PricingCard({
+  tier,
+  currencySymbol,
+  isAuthenticated,
+  userTier,
+  billingPeriod = 'monthly',
+}: PricingCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -106,9 +112,8 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier, b
 
   const ctaConfig = getCTAConfig();
   const priceLabel = tier.price > 0 ? (billingPeriod === 'yearly' ? '/year' : '/month') : '';
-  const monthlyEquivalent = billingPeriod === 'yearly' && tier.price > 0
-    ? Math.round((tier.price / 12) * 100) / 100
-    : null;
+  const monthlyEquivalent =
+    billingPeriod === 'yearly' && tier.price > 0 ? Math.round((tier.price / 12) * 100) / 100 : null;
 
   return (
     <Card className={tier.popular ? 'scale-105 border-primary shadow-lg' : ''}>
@@ -121,17 +126,19 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier, b
           )}
         </div>
         <div className="mb-4">
-          <span className="text-4xl font-bold">{currencySymbol}{tier.price}</span>
+          <span className="text-4xl font-bold">
+            {currencySymbol}
+            {tier.price}
+          </span>
           {tier.price > 0 && <span className="text-muted-foreground">{priceLabel}</span>}
           {monthlyEquivalent !== null && (
             <p className="mt-1 text-sm text-muted-foreground">
-              {currencySymbol}{monthlyEquivalent}/mo, billed annually
+              {currencySymbol}
+              {monthlyEquivalent}/mo, billed annually
             </p>
           )}
           {billingPeriod === 'monthly' && tier.price > 0 && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              Cancel anytime
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Cancel anytime</p>
           )}
         </div>
         <CardDescription>{tier.description}</CardDescription>
