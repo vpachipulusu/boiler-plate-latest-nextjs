@@ -153,6 +153,9 @@ export async function verifyTokenAction(
       };
     }
 
+    // Get full Firebase user data to access displayName
+    const firebaseUser = await adminAuth.getUser(uid);
+
     // Get request headers for login tracking
     const headersList = await headers();
     const ipAddress =
@@ -180,6 +183,9 @@ export async function verifyTokenAction(
           firebaseUid: uid,
           email,
           emailVerified: email_verified || false,
+          displayName: firebaseUser.displayName || null,
+          avatarUrl: firebaseUser.photoURL || null,
+          phoneNumber: firebaseUser.phoneNumber || null,
           lastLoginAt: new Date(),
           subscriptionTier,
         },
@@ -201,12 +207,14 @@ export async function verifyTokenAction(
         await notifyEmailVerified(user.id);
       }
 
-      // Update last login
+      // Update last login and sync displayName/avatar from Firebase
       await db.user.update({
         where: { id: user.id },
         data: {
           lastLoginAt: new Date(),
           emailVerified: email_verified || user.emailVerified,
+          displayName: firebaseUser.displayName || user.displayName,
+          avatarUrl: firebaseUser.photoURL || user.avatarUrl,
         },
       });
     }

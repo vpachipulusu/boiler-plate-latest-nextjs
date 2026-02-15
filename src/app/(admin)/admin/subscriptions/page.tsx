@@ -64,6 +64,15 @@ async function getSubscriptionStats() {
         not: 'free',
       },
     },
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      subscriptionTier: true,
+      subscriptionStatus: true,
+      stripeCurrentPeriodEnd: true,
+      updatedAt: true,
+    },
     orderBy: {
       updatedAt: 'desc',
     },
@@ -187,7 +196,9 @@ export default async function AdminSubscriptionsPage() {
               <TableBody>
                 {stats.recentSubscriptions.map((user: any) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.displayName || '—'}</TableCell>
+                    <TableCell className="font-medium">
+                      {user.displayName || user.email?.split('@')[0] || 'Unknown'}
+                    </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge className="capitalize">{user.subscriptionTier}</Badge>
