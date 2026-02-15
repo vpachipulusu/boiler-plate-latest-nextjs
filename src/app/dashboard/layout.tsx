@@ -96,6 +96,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
               >
                 Security
               </Link>
+              <Link
+                href="/dashboard/settings/billing"
+                className="transition-colors hover:text-foreground/80"
+              >
+                Billing
+              </Link>
             </nav>
           </div>
 

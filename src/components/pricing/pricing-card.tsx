@@ -23,9 +23,10 @@ interface PricingCardProps {
   currencySymbol: string;
   isAuthenticated: boolean;
   userTier?: string;
+  billingPeriod?: 'monthly' | 'yearly';
 }
 
-export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier }: PricingCardProps) {
+export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier, billingPeriod = 'monthly' }: PricingCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +50,7 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier }:
         // Create checkout session - price ID is resolved server-side
         const result = await createCheckoutSessionAction(
           'pro',
-          'monthly',
+          billingPeriod,
           `${window.location.origin}/dashboard?upgrade=success`,
           `${window.location.origin}/pricing?upgrade=cancelled`
         );
@@ -101,6 +102,10 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier }:
   };
 
   const ctaConfig = getCTAConfig();
+  const priceLabel = tier.price > 0 ? (billingPeriod === 'yearly' ? '/year' : '/month') : '';
+  const monthlyEquivalent = billingPeriod === 'yearly' && tier.price > 0
+    ? Math.round((tier.price / 12) * 100) / 100
+    : null;
 
   return (
     <Card className={tier.popular ? 'scale-105 border-primary shadow-lg' : ''}>
@@ -114,7 +119,17 @@ export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier }:
         </div>
         <div className="mb-4">
           <span className="text-4xl font-bold">{currencySymbol}{tier.price}</span>
-          {tier.price > 0 && <span className="text-muted-foreground">/month</span>}
+          {tier.price > 0 && <span className="text-muted-foreground">{priceLabel}</span>}
+          {monthlyEquivalent !== null && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {currencySymbol}{monthlyEquivalent}/mo, billed annually
+            </p>
+          )}
+          {billingPeriod === 'monthly' && tier.price > 0 && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Cancel anytime
+            </p>
+          )}
         </div>
         <CardDescription>{tier.description}</CardDescription>
       </CardHeader>

@@ -255,7 +255,7 @@ export default async function DashboardPage({
           </Card>
 
           <Card className="cursor-pointer transition-colors hover:bg-accent">
-            <Link href="/pricing">
+            <Link href="/dashboard/settings/billing">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-primary/10 p-2">

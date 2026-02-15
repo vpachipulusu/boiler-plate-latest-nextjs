@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PricingCard } from '@/components/pricing/pricing-card';
+import { PricingCardsSection } from '@/components/pricing/pricing-cards-section';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { getSubscriptionPlans, getCurrencySymbol } from '@/config/subscriptions';
@@ -72,7 +72,8 @@ export default async function PricingPage() {
     const uiConfig = TIER_UI_CONFIG[plan.tier] ?? TIER_UI_CONFIG.free;
     return {
       name: plan.name,
-      price: plan.price.monthly,
+      monthlyPrice: plan.price.monthly,
+      yearlyPrice: plan.price.yearly,
       description: plan.description,
       features: plan.features,
       limitations: uiConfig.limitations,
@@ -89,22 +90,17 @@ export default async function PricingPage() {
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
           <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
-            Choose the plan that's right for you. All plans include a 14-day free trial.
+            Choose the plan that&apos;s right for you. All plans include a 14-day free trial.
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="mb-12 grid gap-8 md:grid-cols-3">
-          {tiers.map((tier) => (
-            <PricingCard
-              key={tier.name}
-              tier={tier}
-              currencySymbol={currencySymbol}
-              isAuthenticated={session.isAuthenticated}
-              userTier={session.userTier}
-            />
-          ))}
-        </div>
+        {/* Billing Toggle + Pricing Cards */}
+        <PricingCardsSection
+          tiers={tiers}
+          currencySymbol={currencySymbol}
+          isAuthenticated={session.isAuthenticated}
+          userTier={session.userTier}
+        />
 
         {/* FAQ Section */}
         <div className="mx-auto max-w-3xl">
@@ -141,8 +137,21 @@ export default async function PricingPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Yes, we offer a 30-day money-back guarantee. If you're not satisfied with our
+                  Yes, we offer a 30-day money-back guarantee. If you&apos;re not satisfied with our
                   service, contact us for a full refund.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">What&apos;s the difference between monthly and yearly?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Monthly plans are billed every month and can be canceled anytime. Yearly plans are
+                  billed as a single annual payment at a discounted rate. Both plans auto-renew, and
+                  you can turn off auto-renewal from your billing settings at any time.
                 </p>
               </CardContent>
             </Card>

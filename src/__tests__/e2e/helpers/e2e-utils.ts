@@ -215,3 +215,26 @@ export async function expectSubscriptionTier(
   });
   await expect(subscriptionCard).toContainText(new RegExp(tier, 'i'), { timeout: 10000 });
 }
+
+/**
+ * Navigate to the billing settings page.
+ */
+export async function navigateToBilling(page: Page): Promise<void> {
+  await navigateAndWait(page, '/dashboard/settings/billing');
+  await expect(page.getByRole('heading', { name: /billing & subscription/i })).toBeVisible({
+    timeout: 10_000,
+  });
+}
+
+/**
+ * Toggle auto-renewal on the billing page and wait for the action to complete.
+ */
+export async function toggleAutoRenewal(page: Page): Promise<void> {
+  const renewalCard = page.locator('[class*="card"]').filter({ hasText: /auto-renewal/i });
+  const toggle = renewalCard.locator('button[role="switch"]');
+  await toggle.click();
+  // Wait for toast confirmation
+  await expect(
+    page.getByText(/auto-renewal turned|subscription will renew|subscription will expire/i)
+  ).toBeVisible({ timeout: 10_000 });
+}

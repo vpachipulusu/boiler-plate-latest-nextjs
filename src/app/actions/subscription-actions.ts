@@ -325,7 +325,7 @@ export async function verifyUpgradeSessionAction(): Promise<
     const wasRecentlyUpdated = user.updatedAt > fiveMinutesAgo;
 
     // Valid if: has checkout token AND (subscription was recently updated OR is already upgraded)
-    const isValid = checkoutToken && (wasRecentlyUpdated || user.subscriptionTier !== 'free');
+    const isValid = !!checkoutToken && (wasRecentlyUpdated || user.subscriptionTier !== 'free');
 
     // Clear checkout tokens after verification
     if (isValid) {
@@ -700,5 +700,225 @@ export async function hasActiveSubscriptionAction(): Promise<SubscriptionActionR
       success: false,
       error: error.message || 'Failed to check subscription status',
     };
+  }
+}
+
+/**
+ * Get full subscription details including billing period and auto-renewal status
+ */
+export async function getSubscriptionDetailsAction(): Promise<SubscriptionActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscriptionTier: true,
+        subscriptionStatus: true,
+        stripeSubscriptionId: true,
+        stripePriceId: true,
+        stripeCurrentPeriodEnd: true,
+        stripeCustomerId: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    let billingPeriod: 'monthly' | 'yearly' | null = null;
+    let autoRenewal = false;
+    let currentPeriodEnd: Date | null = null;
+
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        autoRenewal = !subscription.cancel_at_period_end;
+        currentPeriodEnd = new Date((subscription as any).current_period_end * 1000);
+
+        // Determine billing period from price interval
+        const priceId = subscription.items.data[0]?.price.id;
+        if (priceId) {
+          const proYearly = process.env.STRIPE_PRICE_ID_PRO_YEARLY || '';
+          const enterpriseYearly = process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY || '';
+          billingPeriod = (priceId === proYearly || priceId === enterpriseYearly) ? 'yearly' : 'monthly';
+        }
+      } catch (error) {
+        console.error('Failed to retrieve Stripe subscription:', error);
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        billingPeriod,
+        autoRenewal,
+        currentPeriodEnd,
+        hasStripeCustomer: !!user.stripeCustomerId,
+      },
+    };
+  } catch (error: any) {
+    console.error('Get subscription details error:', error);
+    return { success: false, error: error.message || 'Failed to get subscription details' };
+  }
+}
+
+/**
+ * Get saved payment methods for the customer
+ */
+export async function getPaymentMethodsAction(): Promise<SubscriptionActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true },
+    });
+
+    if (!user || !user.stripeCustomerId) {
+      return { success: true, data: { paymentMethods: [], defaultPaymentMethodId: null } };
+    }
+
+    // Get customer to find default payment method
+    const customer = await stripe.customers.retrieve(user.stripeCustomerId);
+    const defaultPaymentMethodId =
+      !customer.deleted && customer.invoice_settings?.default_payment_method
+        ? (typeof customer.invoice_settings.default_payment_method === 'string'
+            ? customer.invoice_settings.default_payment_method
+            : customer.invoice_settings.default_payment_method.id)
+        : null;
+
+    // List payment methods
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: user.stripeCustomerId,
+      type: 'card',
+    });
+
+    const formatted = paymentMethods.data.map((pm) => ({
+      id: pm.id,
+      brand: pm.card?.brand || 'unknown',
+      last4: pm.card?.last4 || '****',
+      expMonth: pm.card?.exp_month || 0,
+      expYear: pm.card?.exp_year || 0,
+      isDefault: pm.id === defaultPaymentMethodId,
+    }));
+
+    return {
+      success: true,
+      data: { paymentMethods: formatted, defaultPaymentMethodId },
+    };
+  } catch (error: any) {
+    console.error('Get payment methods error:', error);
+    return { success: false, error: error.message || 'Failed to get payment methods' };
+  }
+}
+
+/**
+ * Delete a saved payment method.
+ * Blocked if auto-renewal is active on the subscription.
+ */
+export async function deletePaymentMethodAction(
+  paymentMethodId: string
+): Promise<SubscriptionActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (!paymentMethodId || typeof paymentMethodId !== 'string') {
+      return { success: false, error: 'Invalid payment method ID' };
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true, stripeSubscriptionId: true },
+    });
+
+    if (!user || !user.stripeCustomerId) {
+      return { success: false, error: 'No billing information found' };
+    }
+
+    // Check if auto-renewal is active - block deletion if so
+    if (user.stripeSubscriptionId) {
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      if (!subscription.cancel_at_period_end && subscription.status === 'active') {
+        return {
+          success: false,
+          error: 'Cannot delete payment method while auto-renewal is active. Turn off auto-renewal first.',
+        };
+      }
+    }
+
+    // Verify the payment method belongs to this customer
+    const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
+    if (pm.customer !== user.stripeCustomerId) {
+      return { success: false, error: 'Payment method not found' };
+    }
+
+    await stripe.paymentMethods.detach(paymentMethodId);
+
+    return { success: true, data: { message: 'Payment method removed' } };
+  } catch (error: any) {
+    console.error('Delete payment method error:', error);
+    return { success: false, error: error.message || 'Failed to delete payment method' };
+  }
+}
+
+/**
+ * Set a payment method as the default for the customer
+ */
+export async function setDefaultPaymentMethodAction(
+  paymentMethodId: string
+): Promise<SubscriptionActionResponse> {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (!paymentMethodId || typeof paymentMethodId !== 'string') {
+      return { success: false, error: 'Invalid payment method ID' };
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true, stripeSubscriptionId: true },
+    });
+
+    if (!user || !user.stripeCustomerId) {
+      return { success: false, error: 'No billing information found' };
+    }
+
+    // Verify the payment method belongs to this customer
+    const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
+    if (pm.customer !== user.stripeCustomerId) {
+      return { success: false, error: 'Payment method not found' };
+    }
+
+    // Set as default on customer
+    await stripe.customers.update(user.stripeCustomerId, {
+      invoice_settings: { default_payment_method: paymentMethodId },
+    });
+
+    // Also update on subscription if exists
+    if (user.stripeSubscriptionId) {
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        default_payment_method: paymentMethodId,
+      });
+    }
+
+    return { success: true, data: { message: 'Default payment method updated' } };
+  } catch (error: any) {
+    console.error('Set default payment method error:', error);
+    return { success: false, error: error.message || 'Failed to set default payment method' };
   }
 }
