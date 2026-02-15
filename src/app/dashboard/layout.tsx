@@ -48,7 +48,11 @@ async function getUser() {
       dbDisplayName: dbUser?.displayName,
       dbAvatarUrl: dbUser?.avatarUrl,
       unreadNotificationCount,
-      recentNotifications,
+      // Serialize Date objects to strings for client components
+      recentNotifications: recentNotifications.map(n => ({
+        ...n,
+        createdAt: n.createdAt.toISOString(),
+      })),
     };
   } catch (error) {
     // Expired/invalid session — clear cookies via route handler and redirect to login

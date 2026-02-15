@@ -29,7 +29,7 @@ interface DashboardHeaderProps {
       message: string;
       read: boolean;
       link: string | null;
-      createdAt: Date;
+      createdAt: string; // Serialized from Date
     }>;
   };
 }

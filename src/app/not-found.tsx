@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SearchX, Home, ArrowLeft } from "lucide-react";
+import { SearchX, Home } from "lucide-react";
 
 /**
  * Not Found Component
@@ -42,17 +40,8 @@ export default function NotFound() {
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={() => window.history.back()}
-            className="w-full sm:w-auto"
-            size="lg"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
-          </Button>
-          <Button asChild className="w-full sm:w-auto" size="lg">
+        <CardFooter className="flex justify-center">
+          <Button asChild size="lg">
             <Link href="/">
               <Home className="mr-2 h-4 w-4" />
               Go Home
