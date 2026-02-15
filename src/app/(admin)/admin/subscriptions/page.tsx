@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/client';
-import { getStripePrices } from '@/config/subscriptions';
+import { getStripePrices, getCurrencySymbol } from '@/config/subscriptions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -76,7 +76,10 @@ async function getSubscriptionStats() {
 }
 
 export default async function AdminSubscriptionsPage() {
-  const stats = await getSubscriptionStats();
+  const [stats, currencySymbol] = await Promise.all([
+    getSubscriptionStats(),
+    getCurrencySymbol(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -106,7 +109,7 @@ export default async function AdminSubscriptionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeProSubscriptions}</div>
-            <p className="text-xs text-muted-foreground">${stats.proMonthlyPrice}/month each</p>
+            <p className="text-xs text-muted-foreground">{currencySymbol}{stats.proMonthlyPrice}/month each</p>
           </CardContent>
         </Card>
 
@@ -117,7 +120,7 @@ export default async function AdminSubscriptionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeEnterpriseSubscriptions}</div>
-            <p className="text-xs text-muted-foreground">${stats.enterpriseMonthlyPrice}/month each</p>
+            <p className="text-xs text-muted-foreground">{currencySymbol}{stats.enterpriseMonthlyPrice}/month each</p>
           </CardContent>
         </Card>
 
@@ -127,7 +130,7 @@ export default async function AdminSubscriptionsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.mrr.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{currencySymbol}{stats.mrr.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               {stats.canceledThisMonth} canceled this month
             </p>

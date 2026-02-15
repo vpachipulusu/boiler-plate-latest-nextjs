@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/client';
-import { getStripePrices } from '@/config/subscriptions';
+import { getStripePrices, getCurrencySymbol } from '@/config/subscriptions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Users,
@@ -105,7 +105,10 @@ async function getAdminStats() {
 }
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminStats();
+  const [stats, currencySymbol] = await Promise.all([
+    getAdminStats(),
+    getCurrencySymbol(),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -147,7 +150,7 @@ export default async function AdminDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.mrr.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{currencySymbol}{stats.mrr.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Monthly recurring revenue</p>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db/client';
-import { getStripePrices } from '@/config/subscriptions';
+import { getStripePrices, getCurrencySymbol } from '@/config/subscriptions';
 import { Users, TrendingUp, DollarSign, Activity, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -67,7 +67,10 @@ async function getAnalyticsData() {
 }
 
 export default async function AdminAnalyticsPage() {
-  const analytics = await getAnalyticsData();
+  const [analytics, currencySymbol] = await Promise.all([
+    getAnalyticsData(),
+    getCurrencySymbol(),
+  ]);
 
   const isGrowthPositive = analytics.userGrowth > 0;
 
@@ -119,7 +122,7 @@ export default async function AdminAnalyticsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${analytics.mrr.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{currencySymbol}{analytics.mrr.toLocaleString()}</div>
             <p className="mt-1 text-xs text-muted-foreground">Monthly recurring revenue</p>
           </CardContent>
         </Card>
@@ -177,7 +180,7 @@ export default async function AdminAnalyticsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="text-sm font-medium">Monthly Recurring Revenue</p>
-                  <p className="mt-1 text-2xl font-bold">${analytics.mrr.toLocaleString()}</p>
+                  <p className="mt-1 text-2xl font-bold">{currencySymbol}{analytics.mrr.toLocaleString()}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-primary" />
               </div>
@@ -186,7 +189,7 @@ export default async function AdminAnalyticsPage() {
                 <div>
                   <p className="text-sm font-medium">Average Revenue Per User</p>
                   <p className="mt-1 text-2xl font-bold">
-                    $
+                    {currencySymbol}
                     {analytics.currentSubscriptions > 0
                       ? (analytics.mrr / analytics.currentSubscriptions).toFixed(2)
                       : '0'}

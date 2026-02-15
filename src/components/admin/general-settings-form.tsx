@@ -15,22 +15,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { upsertAppSettingAction } from '@/app/actions/admin/settings-actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, DollarSign, Globe } from 'lucide-react';
+import { CURRENCIES } from '@/config/subscriptions';
 
 interface GeneralSettingsFormProps {
   initialSettings: Record<string, any>;
 }
-
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
-  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-];
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },

@@ -20,7 +20,8 @@
       "Bash(npx prisma generate:*)",
       "Bash(npx tsc:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm test)"
+      "Bash(pnpm test)",
+      "Bash(pnpm test:*)"
     ]
   }
 }

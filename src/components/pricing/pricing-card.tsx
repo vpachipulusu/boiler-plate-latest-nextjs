@@ -20,11 +20,12 @@ interface PricingCardProps {
     href: string;
     popular: boolean;
   };
+  currencySymbol: string;
   isAuthenticated: boolean;
   userTier?: string;
 }
 
-export function PricingCard({ tier, isAuthenticated, userTier }: PricingCardProps) {
+export function PricingCard({ tier, currencySymbol, isAuthenticated, userTier }: PricingCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -112,7 +113,7 @@ export function PricingCard({ tier, isAuthenticated, userTier }: PricingCardProp
           )}
         </div>
         <div className="mb-4">
-          <span className="text-4xl font-bold">${tier.price}</span>
+          <span className="text-4xl font-bold">{currencySymbol}{tier.price}</span>
           {tier.price > 0 && <span className="text-muted-foreground">/month</span>}
         </div>
         <CardDescription>{tier.description}</CardDescription>

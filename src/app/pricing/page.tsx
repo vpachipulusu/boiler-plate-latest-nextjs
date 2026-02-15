@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PricingCard } from '@/components/pricing/pricing-card';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
-import { getSubscriptionPlans } from '@/config/subscriptions';
+import { getSubscriptionPlans, getCurrencySymbol } from '@/config/subscriptions';
 
 const TIER_UI_CONFIG: Record<string, {
   limitations: string[];
@@ -63,7 +63,10 @@ async function getUserSession() {
 
 export default async function PricingPage() {
   const session = await getUserSession();
-  const plans = await getSubscriptionPlans();
+  const [plans, currencySymbol] = await Promise.all([
+    getSubscriptionPlans(),
+    getCurrencySymbol(),
+  ]);
 
   const tiers = plans.map((plan) => {
     const uiConfig = TIER_UI_CONFIG[plan.tier] ?? TIER_UI_CONFIG.free;
@@ -96,6 +99,7 @@ export default async function PricingPage() {
             <PricingCard
               key={tier.name}
               tier={tier}
+              currencySymbol={currencySymbol}
               isAuthenticated={session.isAuthenticated}
               userTier={session.userTier}
             />

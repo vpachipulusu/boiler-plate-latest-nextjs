@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { db } from '@/lib/db/client';
+import { getCurrencySymbol } from '@/config/subscriptions';
 import { GeneralSettingsForm } from '@/components/admin/general-settings-form';
 import { FeatureFlagsList } from '@/components/admin/feature-flags-list';
 
@@ -34,7 +35,10 @@ async function getSettings() {
 }
 
 export default async function AdminSettingsPage() {
-  const settings = await getSettings();
+  const [settings, currencySymbol] = await Promise.all([
+    getSettings(),
+    getCurrencySymbol(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -104,7 +108,7 @@ export default async function AdminSettingsPage() {
                 <h3 className="font-semibold">Pro Plan</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="pro-price">Monthly Price ($)</Label>
+                    <Label htmlFor="pro-price">Monthly Price ({currencySymbol})</Label>
                     <Input id="pro-price" type="number" defaultValue="29" />
                   </div>
                   <div className="space-y-2">
@@ -118,7 +122,7 @@ export default async function AdminSettingsPage() {
                 <h3 className="font-semibold">Enterprise Plan</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="enterprise-price">Monthly Price ($)</Label>
+                    <Label htmlFor="enterprise-price">Monthly Price ({currencySymbol})</Label>
                     <Input id="enterprise-price" type="number" defaultValue="99" />
                   </div>
                   <div className="space-y-2">

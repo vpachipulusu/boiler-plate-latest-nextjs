@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache';
 import Stripe from 'stripe';
+import { db } from '@/lib/db/client';
 
 export const SUBSCRIPTION_TIERS = {
   FREE: 'free',
@@ -175,3 +176,40 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
     return plan;
   });
 }
+
+/**
+ * Supported currencies with their symbols.
+ */
+export const CURRENCIES = [
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+] as const;
+
+async function fetchCurrencySymbol(): Promise<string> {
+  try {
+    const setting = await db.appSettings.findUnique({
+      where: { key: 'currency' },
+    });
+
+    const code = (setting?.value as string) || 'USD';
+    return CURRENCIES.find((c) => c.code === code)?.symbol ?? '$';
+  } catch (error) {
+    return '$';
+  }
+}
+
+/**
+ * Cached currency symbol from admin settings. Revalidates every 1 hour.
+ */
+export const getCurrencySymbol = unstable_cache(
+  fetchCurrencySymbol,
+  ['currency-symbol'],
+  { revalidate: 3600, tags: ['currency-setting'] }
+);
