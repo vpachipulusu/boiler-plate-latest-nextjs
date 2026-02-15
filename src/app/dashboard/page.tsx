@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,8 +51,8 @@ async function getUserData() {
 
     return user;
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    return null;
+    // Expired/invalid session — clear cookies via route handler and redirect to login
+    redirect('/api/auth/clear-session');
   }
 }
 
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
   const user = await getUserData();
 
   if (!user) {
-    return <div>Error loading user data</div>;
+    redirect('/login');
   }
 
   const stats = await getStats(user);

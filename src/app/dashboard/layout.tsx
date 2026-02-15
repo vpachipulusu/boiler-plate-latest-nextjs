@@ -43,7 +43,8 @@ async function getUser() {
       unreadNotificationCount,
     };
   } catch (error) {
-    return null;
+    // Expired/invalid session — clear cookies via route handler and redirect to login
+    redirect('/api/auth/clear-session');
   }
 }
 

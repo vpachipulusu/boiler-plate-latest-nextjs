@@ -237,12 +237,13 @@ export async function verifyTokenAction(
     });
 
     // Set session cookie
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days in ms (for Firebase)
+    const maxAgeSeconds = 60 * 60 * 24 * 5; // 5 days in seconds (for cookie maxAge)
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
 
     const cookieStore = await cookies();
     cookieStore.set('session', sessionCookie, {
-      maxAge: expiresIn,
+      maxAge: maxAgeSeconds,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -251,7 +252,7 @@ export async function verifyTokenAction(
 
     // Set email verification status cookie (readable by proxy for enforcement)
     cookieStore.set('email-verified', email_verified ? 'true' : 'false', {
-      maxAge: expiresIn,
+      maxAge: maxAgeSeconds,
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -377,6 +378,10 @@ export async function getCurrentSessionAction(): Promise<AuthActionResponse> {
     };
   } catch (error: any) {
     console.error('Get session error:', error);
+    // Clear stale cookie on verification failure
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+    cookieStore.delete('email-verified');
     return {
       success: false,
       error: error.message || 'Session retrieval failed',
