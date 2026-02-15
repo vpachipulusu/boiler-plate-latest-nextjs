@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/client';
+import { getStripePrices } from '@/config/subscriptions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Users,
@@ -80,8 +81,8 @@ async function getAdminStats() {
     _count: true,
   });
 
-  // Calculate MRR (Monthly Recurring Revenue)
-  // This is a simplified calculation - in production you'd use Stripe data
+  // Calculate MRR (Monthly Recurring Revenue) using Stripe prices
+  const prices = await getStripePrices();
   const proPlan = await db.user.count({
     where: { subscriptionTier: 'pro', subscriptionStatus: 'active' },
   });
@@ -89,7 +90,7 @@ async function getAdminStats() {
     where: { subscriptionTier: 'enterprise', subscriptionStatus: 'active' },
   });
 
-  const mrr = proPlan * 29 + enterprisePlan * 99; // Example pricing
+  const mrr = proPlan * prices.pro.monthly + enterprisePlan * prices.enterprise.monthly;
 
   return {
     totalUsers,

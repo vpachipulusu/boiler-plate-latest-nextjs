@@ -297,10 +297,10 @@ test.describe('Admin Dashboard', () => {
 
     test('should display pricing info in metric cards', async ({ page }) => {
       const proCard = page.locator('[class*="card"]').filter({ hasText: 'Pro Plans' });
-      await expect(proCard.getByText(/\$29\/month/i)).toBeVisible();
+      await expect(proCard.getByText(/\$\d+\/month/i)).toBeVisible();
 
       const enterpriseCard = page.locator('[class*="card"]').filter({ hasText: 'Enterprise Plans' });
-      await expect(enterpriseCard.getByText(/\$99\/month/i)).toBeVisible();
+      await expect(enterpriseCard.getByText(/\$\d+\/month/i)).toBeVisible();
     });
 
     test('should display recent subscriptions table', async ({ page }) => {

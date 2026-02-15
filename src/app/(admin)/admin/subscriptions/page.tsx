@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/client';
+import { getStripePrices } from '@/config/subscriptions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -13,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { DollarSign, TrendingUp, TrendingDown, Users, CreditCard } from 'lucide-react';
 
 async function getSubscriptionStats() {
+  const prices = await getStripePrices();
+
   const totalSubscriptions = await db.user.count({
     where: {
       subscriptionStatus: 'active',
@@ -45,7 +48,7 @@ async function getSubscriptionStats() {
     },
   });
 
-  const mrr = activeProSubscriptions * 29 + activeEnterpriseSubscriptions * 99;
+  const mrr = activeProSubscriptions * prices.pro.monthly + activeEnterpriseSubscriptions * prices.enterprise.monthly;
 
   const recentSubscriptions = await db.user.findMany({
     where: {
@@ -66,6 +69,8 @@ async function getSubscriptionStats() {
     activeEnterpriseSubscriptions,
     canceledThisMonth,
     mrr,
+    proMonthlyPrice: prices.pro.monthly,
+    enterpriseMonthlyPrice: prices.enterprise.monthly,
     recentSubscriptions,
   };
 }
@@ -101,7 +106,7 @@ export default async function AdminSubscriptionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeProSubscriptions}</div>
-            <p className="text-xs text-muted-foreground">$29/month each</p>
+            <p className="text-xs text-muted-foreground">${stats.proMonthlyPrice}/month each</p>
           </CardContent>
         </Card>
 
@@ -112,7 +117,7 @@ export default async function AdminSubscriptionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeEnterpriseSubscriptions}</div>
-            <p className="text-xs text-muted-foreground">$99/month each</p>
+            <p className="text-xs text-muted-foreground">${stats.enterpriseMonthlyPrice}/month each</p>
           </CardContent>
         </Card>
 

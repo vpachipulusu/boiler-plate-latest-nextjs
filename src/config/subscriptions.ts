@@ -1,3 +1,6 @@
+import { unstable_cache } from 'next/cache';
+import Stripe from 'stripe';
+
 export const SUBSCRIPTION_TIERS = {
   FREE: 'free',
   PRO: 'pro',
@@ -21,6 +24,16 @@ export interface SubscriptionPlan {
   tier: SubscriptionTier;
   popular?: boolean;
 }
+
+export interface StripePrices {
+  pro: { monthly: number; yearly: number };
+  enterprise: { monthly: number; yearly: number };
+}
+
+const FALLBACK_PRICES: StripePrices = {
+  pro: { monthly: 0, yearly: 0 },
+  enterprise: { monthly: 0, yearly: 0 },
+};
 
 export const subscriptionPlans: SubscriptionPlan[] = [
   {
@@ -54,8 +67,8 @@ export const subscriptionPlans: SubscriptionPlan[] = [
       'API access',
     ],
     price: {
-      monthly: 29,
-      yearly: 290,
+      monthly: 0, // Resolved at runtime via getStripePrices()
+      yearly: 0,
     },
     stripePriceId: {
       monthly: process.env.STRIPE_PRICE_ID_PRO_MONTHLY || '',
@@ -77,8 +90,8 @@ export const subscriptionPlans: SubscriptionPlan[] = [
       'Custom integrations',
     ],
     price: {
-      monthly: 99,
-      yearly: 990,
+      monthly: 0, // Resolved at runtime via getStripePrices()
+      yearly: 0,
     },
     stripePriceId: {
       monthly: process.env.STRIPE_PRICE_ID_ENTERPRISE_MONTHLY || '',
@@ -87,3 +100,78 @@ export const subscriptionPlans: SubscriptionPlan[] = [
     tier: SUBSCRIPTION_TIERS.ENTERPRISE,
   },
 ];
+
+async function fetchStripePrices(): Promise<StripePrices> {
+  try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.warn('STRIPE_SECRET_KEY not set, using fallback prices');
+      return FALLBACK_PRICES;
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+      typescript: true,
+    });
+
+    const priceIds = [
+      process.env.STRIPE_PRICE_ID_PRO_MONTHLY,
+      process.env.STRIPE_PRICE_ID_PRO_YEARLY,
+      process.env.STRIPE_PRICE_ID_ENTERPRISE_MONTHLY,
+      process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY,
+    ].filter(Boolean) as string[];
+
+    if (priceIds.length === 0) {
+      console.warn('No Stripe price IDs configured, using fallback prices');
+      return FALLBACK_PRICES;
+    }
+
+    const prices = await Promise.all(
+      priceIds.map((id) => stripe.prices.retrieve(id))
+    );
+
+    const priceMap = new Map<string, number>();
+    for (const price of prices) {
+      priceMap.set(price.id, (price.unit_amount ?? 0) / 100);
+    }
+
+    return {
+      pro: {
+        monthly: priceMap.get(process.env.STRIPE_PRICE_ID_PRO_MONTHLY || '') ?? 0,
+        yearly: priceMap.get(process.env.STRIPE_PRICE_ID_PRO_YEARLY || '') ?? 0,
+      },
+      enterprise: {
+        monthly: priceMap.get(process.env.STRIPE_PRICE_ID_ENTERPRISE_MONTHLY || '') ?? 0,
+        yearly: priceMap.get(process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY || '') ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch Stripe prices:', error);
+    return FALLBACK_PRICES;
+  }
+}
+
+/**
+ * Cached Stripe prices. Revalidates every 1 hour.
+ */
+export const getStripePrices = unstable_cache(
+  fetchStripePrices,
+  ['stripe-prices'],
+  { revalidate: 3600, tags: ['stripe-prices'] }
+);
+
+/**
+ * Returns subscription plans with prices fetched from Stripe.
+ */
+export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+  const prices = await getStripePrices();
+
+  return subscriptionPlans.map((plan) => {
+    if (plan.tier === 'pro') {
+      return { ...plan, price: prices.pro };
+    }
+    if (plan.tier === 'enterprise') {
+      return { ...plan, price: prices.enterprise };
+    }
+    return plan;
+  });
+}

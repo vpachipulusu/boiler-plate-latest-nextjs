@@ -5,19 +5,14 @@ import { Button } from '@/components/ui/button';
 import { PricingCard } from '@/components/pricing/pricing-card';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { getSubscriptionPlans } from '@/config/subscriptions';
 
-const tiers = [
-  {
-    name: 'Free',
-    price: 0,
-    description: 'Perfect for trying out our platform',
-    features: [
-      'Up to 3 projects',
-      'Basic analytics',
-      'Community support',
-      '1 GB storage',
-      'Basic features',
-    ],
+const TIER_UI_CONFIG: Record<string, {
+  limitations: string[];
+  cta: string;
+  href: string;
+}> = {
+  free: {
     limitations: [
       'No priority support',
       'No advanced features',
@@ -26,48 +21,18 @@ const tiers = [
     ],
     cta: 'Get Started',
     href: '/signup',
-    popular: false,
   },
-  {
-    name: 'Pro',
-    price: 29,
-    description: 'For professionals and growing teams',
-    features: [
-      'Unlimited projects',
-      'Advanced analytics',
-      'Priority email support',
-      '50 GB storage',
-      'All features included',
-      'Team collaboration',
-      'Advanced API access',
-      'Custom integrations',
-    ],
+  pro: {
     limitations: [],
     cta: 'Start Free Trial',
     href: '/signup?plan=pro',
-    popular: true,
   },
-  {
-    name: 'Enterprise',
-    price: 99,
-    description: 'For large organizations with custom needs',
-    features: [
-      'Everything in Pro',
-      'Unlimited storage',
-      '24/7 phone support',
-      'Dedicated account manager',
-      'Custom SLA',
-      'Advanced security',
-      'SSO & SAML',
-      'Audit logs',
-      'Custom contracts',
-    ],
+  enterprise: {
     limitations: [],
     cta: 'Contact Sales',
     href: '/contact?plan=enterprise',
-    popular: false,
   },
-];
+};
 
 async function getUserSession() {
   try {
@@ -98,6 +63,21 @@ async function getUserSession() {
 
 export default async function PricingPage() {
   const session = await getUserSession();
+  const plans = await getSubscriptionPlans();
+
+  const tiers = plans.map((plan) => {
+    const uiConfig = TIER_UI_CONFIG[plan.tier] ?? TIER_UI_CONFIG.free;
+    return {
+      name: plan.name,
+      price: plan.price.monthly,
+      description: plan.description,
+      features: plan.features,
+      limitations: uiConfig.limitations,
+      cta: uiConfig.cta,
+      href: uiConfig.href,
+      popular: plan.popular ?? false,
+    };
+  });
 
   return (
     <div className="min-h-screen px-4 py-12">

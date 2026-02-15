@@ -35,18 +35,19 @@ test.describe('Pricing Page', () => {
       await expect(page.getByText(/^enterprise$/i).first()).toBeVisible();
     });
 
-    test('should display correct prices for each tier', async ({ page }) => {
-      // Free = $0
+    test('should display prices for each tier', async ({ page }) => {
+      // Free tier should show $0
       await expect(page.getByRole('heading', { name: /^free$/i })).toBeVisible();
       await expect(page.getByText('$0').first()).toBeVisible();
 
-      // Pro = $29
+      // Pro and Enterprise should show a dollar amount (fetched from Stripe)
       await expect(page.getByRole('heading', { name: /^pro$/i })).toBeVisible();
-      await expect(page.getByText('$29').first()).toBeVisible();
+      const proCard = page.locator('[class*="card"]').filter({ hasText: /^Pro$/ });
+      await expect(proCard.getByText(/\$\d+/).first()).toBeVisible();
 
-      // Enterprise = $99
       await expect(page.getByRole('heading', { name: /^enterprise$/i })).toBeVisible();
-      await expect(page.getByText('$99').first()).toBeVisible();
+      const enterpriseCard = page.locator('[class*="card"]').filter({ hasText: /^Enterprise$/ });
+      await expect(enterpriseCard.getByText(/\$\d+/).first()).toBeVisible();
     });
 
     test('should display tier descriptions', async ({ page }) => {

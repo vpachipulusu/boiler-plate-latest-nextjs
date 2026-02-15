@@ -18,7 +18,9 @@
       "Bash(git mv:*)",
       "Bash(git add:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test)"
     ]
   }
 }

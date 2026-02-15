@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db/client';
+import { getStripePrices } from '@/config/subscriptions';
 import { Users, TrendingUp, DollarSign, Activity, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -39,14 +40,15 @@ async function getAnalyticsData() {
     },
   });
 
-  // MRR
+  // MRR using Stripe prices
+  const prices = await getStripePrices();
   const proPlan = await db.user.count({
     where: { subscriptionTier: 'pro', subscriptionStatus: 'active' },
   });
   const enterprisePlan = await db.user.count({
     where: { subscriptionTier: 'enterprise', subscriptionStatus: 'active' },
   });
-  const mrr = proPlan * 29 + enterprisePlan * 99;
+  const mrr = proPlan * prices.pro.monthly + enterprisePlan * prices.enterprise.monthly;
 
   // Calculate growth
   const userGrowth =
