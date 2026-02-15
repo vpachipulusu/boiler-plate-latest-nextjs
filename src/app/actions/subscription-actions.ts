@@ -498,11 +498,25 @@ export async function resumeSubscriptionAction(): Promise<SubscriptionActionResp
     // First check current subscription state
     const currentSub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
 
-    // Can only resume if subscription is still active (just scheduled to cancel)
+    // Can only resume if subscription is in a valid state
     if (currentSub.status === 'canceled') {
       return {
         success: false,
         error: 'This subscription has already been canceled and cannot be resumed. Please subscribe again from the pricing page.',
+      };
+    }
+
+    if (currentSub.status === 'incomplete' || currentSub.status === 'incomplete_expired') {
+      return {
+        success: false,
+        error: 'This subscription was never completed. Please subscribe again from the pricing page.',
+      };
+    }
+
+    if (currentSub.status !== 'active') {
+      return {
+        success: false,
+        error: `Subscription status is ${currentSub.status}. Only active subscriptions can be managed.`,
       };
     }
 
@@ -782,19 +796,19 @@ export async function getSubscriptionDetailsAction(): Promise<SubscriptionAction
 
     if (user.stripeSubscriptionId) {
       try {
-        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+          expand: ['items.data.price'],
+        });
         autoRenewal = !subscription.cancel_at_period_end;
         stripeStatus = subscription.status;
 
         const periodEndDate = getSubscriptionPeriodEnd(subscription);
         currentPeriodEnd = periodEndDate?.toISOString() ?? null;
 
-        // Determine billing period from price interval
-        const priceId = subscription.items.data[0]?.price.id;
-        if (priceId) {
-          const proYearly = process.env.STRIPE_PRICE_ID_PRO_YEARLY || '';
-          const enterpriseYearly = process.env.STRIPE_PRICE_ID_ENTERPRISE_YEARLY || '';
-          billingPeriod = (priceId === proYearly || priceId === enterpriseYearly) ? 'yearly' : 'monthly';
+        // Determine billing period from actual Stripe price interval
+        const price = subscription.items.data[0]?.price as any;
+        if (price?.recurring?.interval) {
+          billingPeriod = price.recurring.interval === 'year' ? 'yearly' : 'monthly';
         }
       } catch (error) {
         console.error('Failed to retrieve Stripe subscription:', error);
@@ -917,8 +931,13 @@ export async function deletePaymentMethodAction(
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const pmCustomerId = extractCustomerId(pm.customer as any);
+    
+    if (!pmCustomerId) {
+      return { success: false, error: 'Payment method is not attached to any customer' };
+    }
+    
     if (pmCustomerId !== user.stripeCustomerId) {
-      return { success: false, error: 'Payment method not found' };
+      return { success: false, error: 'Payment method not found or does not belong to your account' };
     }
 
     await stripe.paymentMethods.detach(paymentMethodId);
@@ -958,8 +977,14 @@ export async function setDefaultPaymentMethodAction(
     // Verify the payment method belongs to this customer
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const pmCustomerId = extractCustomerId(pm.customer as any);
-    if (pmCustomerId !== user.stripeCustomerId) {
-      return { success: false, error: 'Payment method not found' };
+    
+    // If payment method is not attached to a customer, attach it first
+    if (!pm.customer) {
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: user.stripeCustomerId,
+      });
+    } else if (pmCustomerId !== user.stripeCustomerId) {
+      return { success: false, error: 'Payment method does not belong to your account' };
     }
 
     // Set as default on customer

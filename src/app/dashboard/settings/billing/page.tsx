@@ -109,6 +109,16 @@ export default function BillingPage() {
   const handleToggleAutoRenewal = async () => {
     if (!subscription) return;
 
+    // Don't allow enabling auto-renewal if there's no active subscription
+    if (!subscription.autoRenewal && (!hasActiveSubscription || subscription.subscriptionStatus !== 'active')) {
+      toast({
+        title: 'Cannot Enable Auto-Renewal',
+        description: 'You need an active subscription to enable auto-renewal. Please upgrade your plan first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsTogglingRenewal(true);
     try {
       const result = subscription.autoRenewal
@@ -240,6 +250,11 @@ export default function BillingPage() {
                   {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                 </p>
               )}
+              {!subscription?.currentPeriodEnd && isCanceling && (
+                <p className="text-sm text-muted-foreground">
+                  Will expire at the end of the current billing period
+                </p>
+              )}
             </div>
             {isFreeTier && (
               <Button asChild>
@@ -270,8 +285,8 @@ export default function BillingPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {subscription?.autoRenewal
-                    ? 'Your subscription will renew automatically at the end of each billing period.'
-                    : `Your subscription will expire on ${subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString() : 'the end of the billing period'}. Turn on to continue your plan.`}
+                    ? `Your subscription will renew automatically${subscription?.currentPeriodEnd ? ` on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}` : ' at the end of each billing period'}.`
+                    : `Your subscription will expire${subscription?.currentPeriodEnd ? ` on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}` : ' at the end of the billing period'}. Turn on to continue your plan.`}
                 </p>
               </div>
               <Switch
