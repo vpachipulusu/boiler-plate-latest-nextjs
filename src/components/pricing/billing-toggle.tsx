@@ -8,7 +8,11 @@ interface BillingToggleProps {
   yearlySavingsPercent?: number;
 }
 
-export function BillingToggle({ billingPeriod, onToggle, yearlySavingsPercent }: BillingToggleProps) {
+export function BillingToggle({
+  billingPeriod,
+  onToggle,
+  yearlySavingsPercent,
+}: BillingToggleProps) {
   return (
     <div className="flex items-center justify-center gap-4">
       <button
@@ -32,7 +36,7 @@ export function BillingToggle({ billingPeriod, onToggle, yearlySavingsPercent }:
         }`}
       >
         Yearly
-        {yearlySavingsPercent && yearlySavingsPercent > 0 && (
+        {yearlySavingsPercent !== undefined && yearlySavingsPercent > 0 && (
           <Badge variant="secondary" className="text-xs">
             Save {yearlySavingsPercent}%
           </Badge>

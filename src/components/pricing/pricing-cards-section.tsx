@@ -34,8 +34,8 @@ export function PricingCardsSection({
   // Calculate savings percentage from the Pro tier prices
   const proTier = tiers.find((t) => t.name === 'Pro');
   const yearlySavingsPercent =
-    proTier && proTier.monthlyPrice > 0
-      ? Math.round((1 - proTier.yearlyPrice / (proTier.monthlyPrice * 12)) * 100)
+    proTier && proTier.monthlyPrice > 0 && proTier.yearlyPrice > 0
+      ? Math.max(0, Math.round((1 - proTier.yearlyPrice / (proTier.monthlyPrice * 12)) * 100))
       : 0;
 
   return (

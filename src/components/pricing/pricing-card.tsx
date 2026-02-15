@@ -111,9 +111,14 @@ export function PricingCard({
   };
 
   const ctaConfig = getCTAConfig();
-  const priceLabel = tier.price > 0 ? (billingPeriod === 'yearly' ? '/year' : '/month') : '';
-  const monthlyEquivalent =
-    billingPeriod === 'yearly' && tier.price > 0 ? Math.round((tier.price / 12) * 100) / 100 : null;
+
+  // For yearly billing, show monthly equivalent as main price
+  const displayPrice =
+    billingPeriod === 'yearly' && tier.price > 0
+      ? Math.round((tier.price / 12) * 100) / 100
+      : tier.price;
+
+  const priceLabel = tier.price > 0 ? '/month' : '';
 
   return (
     <Card className={tier.popular ? 'scale-105 border-primary shadow-lg' : ''}>
@@ -128,13 +133,13 @@ export function PricingCard({
         <div className="mb-4">
           <span className="text-4xl font-bold">
             {currencySymbol}
-            {tier.price}
+            {displayPrice}
           </span>
           {tier.price > 0 && <span className="text-muted-foreground">{priceLabel}</span>}
-          {monthlyEquivalent !== null && (
+          {billingPeriod === 'yearly' && tier.price > 0 && (
             <p className="mt-1 text-sm text-muted-foreground">
               {currencySymbol}
-              {monthlyEquivalent}/mo, billed annually
+              {tier.price} billed annually
             </p>
           )}
           {billingPeriod === 'monthly' && tier.price > 0 && (
