@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,8 +7,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { SearchX, Home } from "lucide-react";
+} from '@/components/ui/card';
+import { SearchX, Home } from 'lucide-react';
 
 /**
  * Not Found Component
@@ -34,10 +34,7 @@ export default function NotFound() {
             <p className="text-6xl font-bold text-primary">404</p>
           </div>
           <div className="text-center text-sm text-muted-foreground">
-            <p>
-              If you believe this is a mistake, please contact support or try
-              navigating back.
-            </p>
+            <p>If you believe this is a mistake, please contact support or try navigating back.</p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">

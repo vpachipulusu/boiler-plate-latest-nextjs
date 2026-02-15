@@ -49,7 +49,7 @@ async function getUser() {
       dbAvatarUrl: dbUser?.avatarUrl,
       unreadNotificationCount,
       // Serialize Date objects to strings for client components
-      recentNotifications: recentNotifications.map(n => ({
+      recentNotifications: recentNotifications.map((n) => ({
         ...n,
         createdAt: n.createdAt.toISOString(),
       })),
