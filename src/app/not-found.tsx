@@ -21,17 +21,17 @@ export default function NotFound() {
     <div className="container flex min-h-screen items-center justify-center py-10">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <SearchX className="h-8 w-8 text-muted-foreground" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-theme-accent/[0.08]">
+            <SearchX className="h-8 w-8 text-theme-accent" />
           </div>
-          <CardTitle className="text-2xl">Page Not Found</CardTitle>
+          <CardTitle className="text-2xl font-semibold">Page Not Found</CardTitle>
           <CardDescription>
             The page you're looking for doesn't exist or has been moved.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted/50 p-4 text-center">
-            <p className="text-6xl font-bold text-primary">404</p>
+            <p className="text-7xl font-bold text-theme-accent/30">404</p>
           </div>
           <div className="text-center text-sm text-muted-foreground">
             <p>If you believe this is a mistake, please contact support or try navigating back.</p>

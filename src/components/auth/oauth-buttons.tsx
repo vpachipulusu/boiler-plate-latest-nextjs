@@ -140,6 +140,7 @@ export function OAuthButtons() {
       <Button
         variant="outline"
         type="button"
+        className="theme-border h-11"
         disabled={isGoogleLoading || isGitHubLoading}
         onClick={handleGoogleSignIn}
       >
@@ -170,6 +171,7 @@ export function OAuthButtons() {
       <Button
         variant="outline"
         type="button"
+        className="theme-border h-11"
         disabled={isGoogleLoading || isGitHubLoading}
         onClick={handleGitHubSignIn}
       >

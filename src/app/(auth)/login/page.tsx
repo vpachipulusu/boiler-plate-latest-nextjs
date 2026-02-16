@@ -20,7 +20,8 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+        <div className="mb-3 h-px w-12 bg-gradient-to-r from-theme-accent to-transparent" />
+        <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>
           Sign in to your account to continue
         </CardDescription>

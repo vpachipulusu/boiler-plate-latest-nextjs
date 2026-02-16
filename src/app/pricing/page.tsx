@@ -88,11 +88,13 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
+          <h1 className="mb-4 text-4xl tracking-tight">Simple, Transparent Pricing</h1>
           <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
             Choose the plan that&apos;s right for you. All plans include a 14-day free trial.
           </p>
         </div>
+
+        <div className="divider-accent mx-auto max-w-[600px]" />
 
         {/* Billing Toggle + Pricing Cards */}
         <PricingCardsSection
@@ -172,17 +174,17 @@ export default async function PricingPage() {
 
         {/* CTA Section */}
         <div className="mt-16 text-center">
-          <Card className="bg-primary text-primary-foreground">
+          <Card className="bg-gradient-to-br from-theme-surface to-theme-surface-light text-white dark:border dark:border-theme-accent/20 dark:from-theme-accent/[0.08] dark:to-theme-accent/[0.02]">
             <CardContent className="py-12">
               <h2 className="mb-4 text-3xl font-bold">Ready to get started?</h2>
               <p className="mb-6 text-lg opacity-90">
                 Join thousands of satisfied customers today.
               </p>
               <div className="flex justify-center gap-4">
-                <Button asChild size="lg" variant="secondary">
+                <Button asChild size="lg" className="bg-theme-accent text-white hover:bg-theme-accent-dark">
                   <Link href="/signup">Start Free Trial</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="bg-transparent">
+                <Button asChild size="lg" variant="outline" className="bg-transparent border-white/30 text-white hover:bg-white/10">
                   <Link href="/contact">Contact Sales</Link>
                 </Button>
               </div>

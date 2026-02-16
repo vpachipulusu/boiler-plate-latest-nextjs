@@ -23,7 +23,7 @@ export default async function ContactPage({
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Contact Us</h1>
+          <h1 className="mb-4 text-4xl tracking-tight">Contact Us</h1>
           <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
             Have questions? We'd love to hear from you. Send us a message and we'll respond as soon
             as possible.
@@ -101,7 +101,7 @@ export default async function ContactPage({
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
+                  <Button type="submit" size="lg" className="w-full bg-theme-accent text-white hover:bg-theme-accent-dark">
                     <Send className="mr-2 h-4 w-4" />
                     Send Message
                   </Button>
@@ -122,8 +122,8 @@ export default async function ContactPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <Mail className="h-5 w-5 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <Mail className="h-5 w-5 text-theme-accent" />
                   </div>
                   <div>
                     <p className="font-medium">Email</p>
@@ -132,8 +132,8 @@ export default async function ContactPage({
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <Phone className="h-5 w-5 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <Phone className="h-5 w-5 text-theme-accent" />
                   </div>
                   <div>
                     <p className="font-medium">Phone</p>
@@ -142,8 +142,8 @@ export default async function ContactPage({
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <MapPin className="h-5 w-5 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <MapPin className="h-5 w-5 text-theme-accent" />
                   </div>
                   <div>
                     <p className="font-medium">Office</p>
@@ -181,7 +181,7 @@ export default async function ContactPage({
               </CardContent>
             </Card>
 
-            <Card className="bg-primary text-primary-foreground">
+            <Card className="bg-gradient-to-br from-theme-surface to-theme-surface-light text-white">
               <CardContent className="pt-6">
                 <h3 className="mb-2 font-semibold">Enterprise Sales</h3>
                 <p className="mb-4 text-sm opacity-90">

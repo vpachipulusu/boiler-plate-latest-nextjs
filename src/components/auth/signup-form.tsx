@@ -182,7 +182,7 @@ export function SignupForm({ selectedPlan }: SignupFormProps) {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full bg-theme-accent text-white hover:bg-theme-accent-dark" disabled={isLoading}>
           {isLoading ? (
             <>
               <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

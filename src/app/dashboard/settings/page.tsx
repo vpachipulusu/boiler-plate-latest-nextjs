@@ -143,7 +143,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
           Manage your account preferences and settings
         </p>
@@ -155,7 +155,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sun className="h-5 w-5" />
+                <Sun className="h-5 w-5 text-theme-accent" />
                 Appearance
               </CardTitle>
               <CardDescription>
@@ -213,7 +213,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+                <Bell className="h-5 w-5 text-theme-accent" />
                 Notifications
               </CardTitle>
               <CardDescription>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
+                <Globe className="h-5 w-5 text-theme-accent" />
                 Regional Settings
               </CardTitle>
               <CardDescription>
@@ -341,7 +341,7 @@ export default function SettingsPage() {
           </Card>
 
           <div className="flex gap-4">
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving} className="bg-theme-accent text-white hover:bg-theme-accent-dark">
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Settings
             </Button>

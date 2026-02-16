@@ -360,7 +360,7 @@ export default function SecurityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Security</h1>
+        <h1 className="text-3xl tracking-tight">Security</h1>
         <p className="text-muted-foreground">Manage your account security and privacy settings</p>
       </div>
 
@@ -368,7 +368,7 @@ export default function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
+            <Key className="h-5 w-5 text-theme-accent" />
             Password
           </CardTitle>
           <CardDescription>Update your password to keep your account secure</CardDescription>
@@ -451,7 +451,7 @@ export default function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
+            <Smartphone className="h-5 w-5 text-theme-accent" />
             Two-Factor Authentication
           </CardTitle>
           <CardDescription>Add an extra layer of security to your account</CardDescription>
@@ -622,7 +622,7 @@ export default function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+            <Clock className="h-5 w-5 text-theme-accent" />
             Login History
           </CardTitle>
           <CardDescription>Review recent activity on your account</CardDescription>
@@ -671,7 +671,7 @@ export default function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
+            <Download className="h-5 w-5 text-theme-accent" />
             Data Export
           </CardTitle>
           <CardDescription>Download a copy of your personal data</CardDescription>
