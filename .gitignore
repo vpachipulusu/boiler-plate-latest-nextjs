@@ -29,6 +29,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Application logs
+/logs
+
+# Sentry
+.sentryclirc
+
 # Local env files
 .env
 .env.local

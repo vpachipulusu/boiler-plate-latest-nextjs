@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,14 +33,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Application error:', error);
-
-    // You can send this to your error tracking service
-    // Example: Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
-      // logErrorToService(error);
-    }
+    Sentry.captureException(error);
   }, [error]);
 
   return (
