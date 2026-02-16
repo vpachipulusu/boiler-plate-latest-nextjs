@@ -74,29 +74,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="container flex h-[72px] items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center space-x-2">
-              <span className="font-display text-xl">Dashboard</span>
+              <span className="text-xl font-semibold">Dashboard</span>
             </Link>
 
             <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
               <Link href="/dashboard" className="nav-link-accent text-sm font-medium">
                 Home
               </Link>
-              <Link
-                href="/dashboard/profile"
-                className="nav-link-accent text-sm font-medium"
-              >
+              <Link href="/dashboard/profile" className="nav-link-accent text-sm font-medium">
                 Profile
               </Link>
-              <Link
-                href="/dashboard/settings"
-                className="nav-link-accent text-sm font-medium"
-              >
+              <Link href="/dashboard/settings" className="nav-link-accent text-sm font-medium">
                 Settings
               </Link>
-              <Link
-                href="/dashboard/security"
-                className="nav-link-accent text-sm font-medium"
-              >
+              <Link href="/dashboard/security" className="nav-link-accent text-sm font-medium">
                 Security
               </Link>
               <Link

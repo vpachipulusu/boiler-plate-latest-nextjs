@@ -14,8 +14,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { upsertAppSettingAction } from '@/app/actions/admin/settings-actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, DollarSign, Globe } from 'lucide-react';
+import { Loader2, DollarSign, Globe, Type } from 'lucide-react';
 import { CURRENCIES } from '@/config/subscriptions';
+import { getFontOptions } from '@/config/fonts';
 
 interface GeneralSettingsFormProps {
   initialSettings: Record<string, any>;
@@ -43,6 +44,9 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [defaultTimezone, setDefaultTimezone] = useState(initialSettings.default_timezone || 'UTC');
   const [currency, setCurrency] = useState(initialSettings.currency || 'USD');
   const [language, setLanguage] = useState(initialSettings.language || 'en');
+  const [appFont, setAppFont] = useState(initialSettings.app_font || 'inter');
+
+  const fontOptions = getFontOptions();
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -79,6 +83,12 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
           value: language,
           category: 'general',
           description: 'Default language for the application',
+        },
+        {
+          key: 'app_font',
+          value: appFont,
+          category: 'general',
+          description: 'Application font family',
         },
       ];
 
@@ -227,6 +237,44 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
               Default language for the application interface
             </p>
           </div>
+        </div>
+
+        <div className="space-y-2.5">
+          <Label htmlFor="app-font" className="flex items-center gap-2 text-sm font-semibold">
+            <Type className="h-4 w-4 text-primary" />
+            Application Font
+          </Label>
+          <Select value={appFont} onValueChange={setAppFont}>
+            <SelectTrigger id="app-font">
+              <SelectValue placeholder="Select font">
+                {appFont && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {fontOptions.find((f) => f.id === appFont)?.name}
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-sm text-muted-foreground">
+                      {fontOptions.find((f) => f.id === appFont)?.description}
+                    </span>
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {fontOptions.map((font) => (
+                <SelectItem key={font.id} value={font.id}>
+                  <div className="flex flex-col gap-0.5 py-1">
+                    <div className="font-semibold">{font.name}</div>
+                    <div className="text-xs text-muted-foreground">{font.description}</div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Choose a font that will be used across the entire application. Select a readable option
+            that fits your brand.
+          </p>
         </div>
 
         <div className="pt-2">

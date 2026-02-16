@@ -50,7 +50,7 @@ async function getAuthenticatedAdmin() {
  * Check if user has admin permission
  */
 function hasPermission(admin: any, permission: string): boolean {
-  const permissions = admin.adminUser?.permissions as string[] || [];
+  const permissions = (admin.adminUser?.permissions as string[]) || [];
   return permissions.includes(permission) || permissions.includes('*');
 }
 
@@ -192,6 +192,11 @@ export async function upsertAppSettingAction(
       revalidateTag('active-theme', { expire: 3600 });
     }
 
+    // Bust font cache when font changes
+    if (data.key === 'app_font') {
+      revalidateTag('active-font', { expire: 3600 });
+    }
+
     return {
       success: true,
       data: { setting },
@@ -321,7 +326,9 @@ export async function getAllFeatureFlagsAction(): Promise<AdminSettingsActionRes
 /**
  * Get feature flag by name
  */
-export async function getFeatureFlagByNameAction(name: string): Promise<AdminSettingsActionResponse> {
+export async function getFeatureFlagByNameAction(
+  name: string
+): Promise<AdminSettingsActionResponse> {
   try {
     const featureFlag = await db.featureFlag.findUnique({
       where: { name },
@@ -550,7 +557,9 @@ export async function getAllEmailTemplatesAction(): Promise<AdminSettingsActionR
 /**
  * Get email template by name
  */
-export async function getEmailTemplateByNameAction(name: string): Promise<AdminSettingsActionResponse> {
+export async function getEmailTemplateByNameAction(
+  name: string
+): Promise<AdminSettingsActionResponse> {
   try {
     const admin = await getAuthenticatedAdmin();
     if (!admin || !hasPermission(admin, 'settings.read')) {
@@ -653,7 +662,9 @@ export async function upsertEmailTemplateAction(
 /**
  * Delete email template
  */
-export async function deleteEmailTemplateAction(name: string): Promise<AdminSettingsActionResponse> {
+export async function deleteEmailTemplateAction(
+  name: string
+): Promise<AdminSettingsActionResponse> {
   try {
     const admin = await getAuthenticatedAdmin();
     if (!admin || !hasPermission(admin, 'settings.delete')) {
