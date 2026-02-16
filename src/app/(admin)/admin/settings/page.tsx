@@ -7,19 +7,16 @@ import { db } from '@/lib/db/client';
 import { getCurrencySymbol } from '@/config/subscriptions';
 import { GeneralSettingsForm } from '@/components/admin/general-settings-form';
 import { FeatureFlagsList } from '@/components/admin/feature-flags-list';
+import { ThemeSettingsForm } from '@/components/admin/theme-settings-form';
+import { DEFAULT_THEME } from '@/config/themes';
 
 async function getSettings() {
-  const generalSettings = await db.appSettings.findMany({
-    where: { category: 'general' },
-  });
-
-  const featureFlags = await db.featureFlag.findMany({
-    orderBy: { name: 'asc' },
-  });
-
-  const emailTemplates = await db.emailTemplate.findMany({
-    orderBy: { name: 'asc' },
-  });
+  const [generalSettings, featureFlags, emailTemplates, themeSetting] = await Promise.all([
+    db.appSettings.findMany({ where: { category: 'general' } }),
+    db.featureFlag.findMany({ orderBy: { name: 'asc' } }),
+    db.emailTemplate.findMany({ orderBy: { name: 'asc' } }),
+    db.appSettings.findUnique({ where: { key: 'active_theme' } }),
+  ]);
 
   // Convert generalSettings to key-value object
   const settingsObject: Record<string, any> = {};
@@ -27,10 +24,17 @@ async function getSettings() {
     settingsObject[setting.key] = setting.value;
   });
 
+  const activeTheme = themeSetting?.value
+    ? typeof themeSetting.value === 'string'
+      ? themeSetting.value
+      : String(themeSetting.value)
+    : DEFAULT_THEME;
+
   return {
     generalSettings: settingsObject,
     featureFlags,
     emailTemplates,
+    activeTheme,
   };
 }
 
@@ -52,6 +56,7 @@ export default async function AdminSettingsPage() {
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="features">Feature Flags</TabsTrigger>
           <TabsTrigger value="email">Email Templates</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
@@ -60,6 +65,11 @@ export default async function AdminSettingsPage() {
         {/* General Settings */}
         <TabsContent value="general" className="space-y-4">
           <GeneralSettingsForm initialSettings={settings.generalSettings} />
+        </TabsContent>
+
+        {/* Theme Settings */}
+        <TabsContent value="theme" className="space-y-4">
+          <ThemeSettingsForm initialTheme={settings.activeTheme} />
         </TabsContent>
 
         {/* Feature Flags */}

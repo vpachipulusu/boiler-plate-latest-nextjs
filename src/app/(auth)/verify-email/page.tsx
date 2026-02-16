@@ -90,9 +90,9 @@ export default function VerifyEmailPage() {
     <Card>
       <CardHeader className="space-y-1">
         <div className="flex justify-center mb-4">
-          <div className="rounded-full bg-primary/10 p-3">
+          <div className="rounded-full bg-theme-accent/10 p-3">
             <svg
-              className="h-6 w-6 text-primary"
+              className="h-6 w-6 text-theme-accent"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -106,7 +106,7 @@ export default function VerifyEmailPage() {
             </svg>
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold text-center">
+        <CardTitle className="text-2xl text-center">
           Verify your email
         </CardTitle>
         <CardDescription className="text-center">

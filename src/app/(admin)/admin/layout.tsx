@@ -107,6 +107,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           />
         </div>
       </div>
+      <div className="h-px bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent" />
 
       <div className="flex">
         {/* Sidebar */}
@@ -116,7 +117,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground hover:border-l-2 hover:border-theme-accent/30 nav-link-accent"
               >
                 <item.icon className="h-5 w-5" />
                 {item.title}

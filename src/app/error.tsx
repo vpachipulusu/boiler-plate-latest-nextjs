@@ -49,7 +49,7 @@ export default function Error({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Something went wrong!</CardTitle>
+          <CardTitle className="font-display text-2xl">Something went wrong!</CardTitle>
           <CardDescription>
             We encountered an unexpected error. Don't worry, we're on it!
           </CardDescription>

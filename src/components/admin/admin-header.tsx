@@ -32,7 +32,7 @@ export function AdminHeader({ user, adminRole }: AdminHeaderProps) {
 
   return (
     <div className="ml-auto flex items-center gap-4">
-      <Badge variant="secondary" className="font-medium capitalize">
+      <Badge variant="secondary" className="font-medium capitalize bg-theme-accent/10 text-theme-accent-dark border-theme-accent/20">
         {adminRole.replace('_', ' ')}
       </Badge>
 

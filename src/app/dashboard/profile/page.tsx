@@ -159,7 +159,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+        <h1 className="text-3xl tracking-tight">Profile</h1>
         <p className="text-muted-foreground">
           Manage your public profile information
         </p>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                 />
 
                 <div className="flex gap-4">
-                  <Button type="submit" disabled={isSaving}>
+                  <Button type="submit" disabled={isSaving} className="bg-theme-accent text-white hover:bg-theme-accent-dark">
                     {isSaving && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}

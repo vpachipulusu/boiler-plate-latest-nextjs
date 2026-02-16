@@ -243,7 +243,7 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
+        <h1 className="text-3xl tracking-tight">Billing & Subscription</h1>
         <p className="text-muted-foreground">
           Manage your subscription plan, auto-renewal, and payment methods
         </p>
@@ -253,7 +253,7 @@ export default function BillingPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+            <CreditCard className="h-5 w-5 text-theme-accent" />
             Current Plan
           </CardTitle>
           <CardDescription>Your active subscription details</CardDescription>
@@ -289,7 +289,7 @@ export default function BillingPage() {
                 </p>
               )}
             </div>
-            <Button asChild variant={isFreeTier ? 'default' : 'outline'}>
+            <Button asChild variant={isFreeTier ? 'default' : 'outline'} className={isFreeTier ? 'bg-theme-accent text-white hover:bg-theme-accent-dark' : ''}>
               <Link href="/pricing">{isFreeTier ? 'Upgrade Plan' : 'Change Plan'}</Link>
             </Button>
           </div>
@@ -301,7 +301,7 @@ export default function BillingPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5" />
+              <RefreshCw className="h-5 w-5 text-theme-accent" />
               Auto-Renewal
             </CardTitle>
             <CardDescription>
@@ -334,7 +334,7 @@ export default function BillingPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-5 w-5 text-theme-accent" />
                 Payment Methods
               </CardTitle>
               <CardDescription>Manage your saved payment methods</CardDescription>
@@ -416,7 +416,7 @@ export default function BillingPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-5 w-5 text-theme-accent" />
             Billing History
           </CardTitle>
           <CardDescription>Your recent invoices and payments</CardDescription>

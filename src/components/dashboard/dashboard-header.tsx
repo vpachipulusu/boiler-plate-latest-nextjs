@@ -52,7 +52,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent">
-            <Avatar className="h-10 w-10 ring-2 ring-transparent transition-all hover:ring-ring">
+            <Avatar className="h-10 w-10 ring-2 ring-transparent transition-all hover:ring-theme-accent/50">
               <AvatarImage
                 src={user.dbAvatarUrl || user.picture || undefined}
                 alt={user.email || 'User'}

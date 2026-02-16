@@ -1,18 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { DM_Serif_Display, Sora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { cn } from "@/lib/utils";
+import { getActiveTheme } from "@/app/actions/theme-actions";
+import { generateThemeCSS } from "@/config/themes";
 
-/**
- * Font Configuration
- * Using Inter font family with optimized subsets
- */
-const inter = Inter({
+const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -102,8 +107,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1120" },
   ],
 };
 
@@ -122,17 +127,23 @@ export const viewport: Viewport = {
  *
  * @param children - Page content
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const activeTheme = await getActiveTheme();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(activeTheme) }} />
+      </head>
       <body
         className={cn(
-          inter.variable,
-          "min-h-screen bg-background font-sans antialiased"
+          dmSerif.variable,
+          sora.variable,
+          "min-h-screen bg-background font-body antialiased"
         )}
         suppressHydrationWarning
       >
@@ -140,7 +151,8 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
+          disableTransitionOnChange={false}
+          appTheme={activeTheme}
         >
           <QueryProvider>
             <ToastProvider>

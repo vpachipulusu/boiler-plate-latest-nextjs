@@ -115,23 +115,23 @@ export default async function DashboardPage({
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {user.displayName || user.email}!</p>
       </div>
 
       {/* Upgrade Banner for Free Tier */}
       {isFreeTier && (
-        <Card className="border-primary">
+        <Card className="theme-card border-theme-accent/30 bg-gradient-to-r from-theme-accent/[0.05] to-theme-accent/[0.02]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <TrendingUp className="h-5 w-5 text-theme-accent" />
                   Upgrade to Pro
                 </CardTitle>
                 <CardDescription>Unlock premium features and remove limitations</CardDescription>
               </div>
-              <Button asChild>
+              <Button asChild className="bg-theme-accent text-white hover:bg-theme-accent-dark">
                 <Link href="/pricing">
                   Upgrade Now <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -143,10 +143,10 @@ export default async function DashboardPage({
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="theme-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Account Status</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Shield className="h-4 w-4 text-theme-accent/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -162,10 +162,10 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="theme-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Subscription Plan</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCard className="h-4 w-4 text-theme-accent/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">{user.subscriptionTier}</div>
@@ -177,10 +177,10 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="theme-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Notifications</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <Bell className="h-4 w-4 text-theme-accent/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.unreadNotifications}</div>
@@ -190,10 +190,10 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="theme-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Logins</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-theme-accent/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalLogins}</div>
@@ -206,12 +206,12 @@ export default async function DashboardPage({
       <div>
         <h2 className="mb-4 text-2xl font-bold tracking-tight">Quick Actions</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="cursor-pointer transition-colors hover:bg-accent">
+          <Card className="theme-card cursor-pointer transition-colors hover:bg-accent">
             <Link href="/dashboard/profile">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <User className="h-6 w-6 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <User className="h-6 w-6 text-theme-accent" />
                   </div>
                   <div>
                     <CardTitle className="text-base">Edit Profile</CardTitle>
@@ -222,12 +222,12 @@ export default async function DashboardPage({
             </Link>
           </Card>
 
-          <Card className="cursor-pointer transition-colors hover:bg-accent">
+          <Card className="theme-card cursor-pointer transition-colors hover:bg-accent">
             <Link href="/dashboard/settings">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <Settings className="h-6 w-6 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <Settings className="h-6 w-6 text-theme-accent" />
                   </div>
                   <div>
                     <CardTitle className="text-base">Settings</CardTitle>
@@ -238,12 +238,12 @@ export default async function DashboardPage({
             </Link>
           </Card>
 
-          <Card className="cursor-pointer transition-colors hover:bg-accent">
+          <Card className="theme-card cursor-pointer transition-colors hover:bg-accent">
             <Link href="/dashboard/security">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <Shield className="h-6 w-6 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <Shield className="h-6 w-6 text-theme-accent" />
                   </div>
                   <div>
                     <CardTitle className="text-base">Security</CardTitle>
@@ -254,12 +254,12 @@ export default async function DashboardPage({
             </Link>
           </Card>
 
-          <Card className="cursor-pointer transition-colors hover:bg-accent">
+          <Card className="theme-card cursor-pointer transition-colors hover:bg-accent">
             <Link href="/dashboard/settings/billing">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <CreditCard className="h-6 w-6 text-primary" />
+                  <div className="rounded-lg bg-theme-accent/[0.08] p-2">
+                    <CreditCard className="h-6 w-6 text-theme-accent" />
                   </div>
                   <div>
                     <CardTitle className="text-base">Billing</CardTitle>
@@ -275,7 +275,7 @@ export default async function DashboardPage({
       {/* Account Overview and Activity */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Account Information */}
-        <Card>
+        <Card className="theme-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
@@ -333,7 +333,7 @@ export default async function DashboardPage({
         </Card>
 
         {/* Recent Login Activity */}
-        <Card>
+        <Card className="theme-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
@@ -386,7 +386,7 @@ export default async function DashboardPage({
 
       {/* Notifications Feed */}
       {user.notifications && user.notifications.length > 0 && (
-        <Card>
+        <Card className="theme-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
@@ -403,8 +403,8 @@ export default async function DashboardPage({
                   key={notification.id}
                   className="flex items-start gap-3 rounded-lg border bg-card p-3"
                 >
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <Bell className="h-4 w-4 text-primary" />
+                  <div className="rounded-full bg-theme-accent/[0.08] p-2">
+                    <Bell className="h-4 w-4 text-theme-accent" />
                   </div>
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium leading-none">{notification.title}</p>
@@ -426,7 +426,7 @@ export default async function DashboardPage({
       )}
 
       {/* Account Stats Summary */}
-      <Card>
+      <Card className="theme-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />

@@ -121,11 +121,12 @@ export function PricingCard({
   const priceLabel = tier.price > 0 ? '/month' : '';
 
   return (
-    <Card className={tier.popular ? 'scale-105 border-primary shadow-lg' : ''}>
+    <Card className={`theme-card ${tier.popular ? 'relative overflow-hidden scale-105 border-theme-accent/40 shadow-xl shadow-theme-accent/10' : ''}`}>
+      {tier.popular && <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-theme-accent-dark via-theme-accent to-theme-accent-dark" />}
       <CardHeader>
         <div className="mb-4 flex items-center justify-between">
           <CardTitle className="text-2xl">{tier.name}</CardTitle>
-          {tier.popular && <Badge variant="default">Most Popular</Badge>}
+          {tier.popular && <Badge className="bg-theme-accent text-white border-0">Most Popular</Badge>}
           {isAuthenticated && userTier === tier.name.toLowerCase() && (
             <Badge variant="secondary">Active</Badge>
           )}
@@ -153,7 +154,7 @@ export function PricingCard({
         <div className="space-y-3">
           {tier.features.map((feature) => (
             <div key={feature} className="flex items-start gap-2">
-              <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-theme-accent" />
               <span className="text-sm">{feature}</span>
             </div>
           ))}
@@ -169,7 +170,7 @@ export function PricingCard({
         {/* CTA */}
         <Button
           asChild={tier.name !== 'Pro' || !isAuthenticated}
-          className="w-full"
+          className={`w-full ${tier.popular ? 'bg-theme-accent text-white hover:bg-theme-accent-dark' : ''}`}
           variant={tier.popular ? 'default' : 'outline'}
           size="lg"
           disabled={ctaConfig.disabled || isLoading}

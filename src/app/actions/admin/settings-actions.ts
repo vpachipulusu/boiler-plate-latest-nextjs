@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
@@ -185,6 +186,11 @@ export async function upsertAppSettingAction(
         metadata: { key: data.key, category: data.category },
       },
     });
+
+    // Bust theme cache when active theme changes
+    if (data.key === 'active_theme') {
+      revalidateTag('active-theme', { expire: 3600 });
+    }
 
     return {
       success: true,

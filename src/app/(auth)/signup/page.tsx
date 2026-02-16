@@ -28,11 +28,12 @@ export default async function SignupPage({
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+        <div className="mb-3 h-px w-12 bg-gradient-to-r from-theme-accent to-transparent" />
+        <CardTitle className="text-2xl">Create an account</CardTitle>
         <CardDescription>Enter your information to get started</CardDescription>
         {selectedPlan && (
           <div className="pt-2">
-            <Badge variant="secondary" className="capitalize">
+            <Badge variant="secondary" className="capitalize border-theme-accent/20 bg-theme-accent/10 text-theme-accent-dark dark:text-theme-accent-light">
               Selected Plan: {selectedPlan}
             </Badge>
           </div>

@@ -1,18 +1,14 @@
-import { Loader2 } from "lucide-react";
-
-/**
- * Loading Component
- *
- * Global loading state for the application
- * Displayed during page transitions and data fetching
- * Uses Next.js 16 App Router loading conventions
- */
 export default function Loading() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-lg text-muted-foreground">Loading...</p>
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative h-12 w-12">
+          <div className="absolute inset-0 rounded-full border-2 border-theme-accent/20" />
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-theme-accent" />
+        </div>
+        <p className="text-sm uppercase tracking-widest text-muted-foreground">
+          Loading
+        </p>
       </div>
     </div>
   );
