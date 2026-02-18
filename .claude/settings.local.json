@@ -26,7 +26,11 @@
       "Bash(del \"c:\\\\MainData\\\\NewSourceCode\\\\boiler-plate-latest-nextjs\\\\add-path.ps1\")",
       "Bash(npm run typecheck:*)",
       "Bash(claude:*)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "Bash(dir:*)",
+      "Bash(node scripts/test-logger-verify.mjs:*)",
+      "Bash(cmd /c \"dir C:\\\\MainData\\\\NewSourceCode\\\\boiler-plate-latest-nextjs\\\\logs 2>&1\")",
+      "Bash(node -e:*)"
     ]
   }
 }

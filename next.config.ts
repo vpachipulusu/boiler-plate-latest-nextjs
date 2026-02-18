@@ -4,6 +4,16 @@ import { withSentryConfig } from '@sentry/nextjs';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['winston', 'winston-daily-rotate-file'],
+  webpack: (config) => {
+    // Prevent webpack from watching the logs/ directory.
+    // Without this, every Winston file write triggers a full HMR recompile.
+    // Must be a string-only array — webpack 5 schema rejects RegExp entries here.
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/node_modules/**', '**/.git/**', '**/logs/**'],
+    };
+    return config;
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

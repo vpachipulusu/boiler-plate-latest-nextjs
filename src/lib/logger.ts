@@ -30,6 +30,7 @@ type WinstonLogger = any;
 
 const globalForWinston = globalThis as unknown as {
   __winstonLogger?: WinstonLogger;
+  __exitHandlerRegistered?: boolean;
 };
 
 function getWinstonLogger(): WinstonLogger | null {
@@ -44,39 +45,45 @@ function getWinstonLogger(): WinstonLogger | null {
     const winston = require('winston');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('winston-daily-rotate-file');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require('path');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('fs');
+
+    const LOG_DIR = path.join(process.cwd(), 'logs');
+    fs.mkdirSync(LOG_DIR, { recursive: true });
 
     const LOG_LEVEL =
-      process.env.LOG_LEVEL ||
-      (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
+      process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 
+    // Shared file format for both environments
+    const fileFormat = winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.errors({ stack: true }),
+      winston.format.json()
+    );
+
+    // File transports run in all environments — Winston streams are async (non-blocking)
     const instance = winston.createLogger({
       level: LOG_LEVEL,
       defaultMeta: { service: 'saas-boilerplate' },
       transports: [
-        // All logs — daily rotated files
         new winston.transports.DailyRotateFile({
-          filename: 'logs/app-%DATE%.log',
+          dirname: LOG_DIR,
+          filename: 'app-%DATE%.log',
           datePattern: 'YYYY-MM-DD',
           maxSize: '20m',
-          maxFiles: '14d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.errors({ stack: true }),
-            winston.format.json(),
-          ),
+          maxFiles: process.env.NODE_ENV === 'production' ? '14d' : '7d',
+          format: fileFormat,
         }),
-        // Error-only logs — daily rotated files
         new winston.transports.DailyRotateFile({
-          filename: 'logs/error-%DATE%.log',
+          dirname: LOG_DIR,
+          filename: 'error-%DATE%.log',
           datePattern: 'YYYY-MM-DD',
           level: 'error',
           maxSize: '20m',
           maxFiles: '30d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.errors({ stack: true }),
-            winston.format.json(),
-          ),
+          format: fileFormat,
         }),
       ],
     });
@@ -89,21 +96,13 @@ function getWinstonLogger(): WinstonLogger | null {
             winston.format.colorize(),
             winston.format.timestamp({ format: 'HH:mm:ss' }),
             winston.format.printf(
-              ({
-                timestamp,
-                level,
-                message,
-                service: _s,
-                ...meta
-              }: Record<string, unknown>) => {
-                const metaStr = Object.keys(meta).length
-                  ? ` ${JSON.stringify(meta)}`
-                  : '';
+              ({ timestamp, level, message, service: _s, ...meta }: Record<string, unknown>) => {
+                const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
                 return `${timestamp} [${level}]: ${message}${metaStr}`;
-              },
-            ),
+              }
+            )
           ),
-        }),
+        })
       );
     } else {
       instance.add(
@@ -111,26 +110,56 @@ function getWinstonLogger(): WinstonLogger | null {
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.errors({ stack: true }),
-            winston.format.json(),
+            winston.format.json()
           ),
-        }),
+        })
       );
+    }
+
+    // Flush file stream buffers on process exit.
+    // Winston file transports buffer writes in Node.js streams. On HMR reloads
+    // or graceful shutdown, calling instance.close() signals all transports to
+    // flush and close their streams without forcing a process.exit().
+    if (!globalForWinston.__exitHandlerRegistered) {
+      globalForWinston.__exitHandlerRegistered = true;
+
+      const flush = () => instance.close();
+
+      process.once('SIGTERM', flush);
+      process.once('SIGINT', flush);
+      process.once('beforeExit', flush);
+      process.once('uncaughtException', (error) => {
+        instance.error('Uncaught exception', { error: error.message, stack: error.stack });
+        instance.close();
+      });
+      process.once('unhandledRejection', (reason) => {
+        instance.error('Unhandled rejection', { reason });
+        instance.close();
+      });
     }
 
     // Singleton — prevent HMR duplication
     globalForWinston.__winstonLogger = instance;
+
+    instance.info('Logger initialized', {
+      level: LOG_LEVEL,
+      environment: process.env.NODE_ENV,
+      logDir: LOG_DIR,
+    });
+
     return instance;
-  } catch {
-    // Winston unavailable (e.g. edge runtime) — fall through to console
+  } catch (err) {
+    console.error('[logger] Winston failed to initialize, falling back to console:', err);
     return null;
   }
 }
 
 // ---------------------------------------------------------------------------
-// Sentry helpers
+// Sentry helpers — fire-and-forget via setImmediate so they never block the
+// request/response cycle. Sentry's SDK batches internally; we just avoid the
+// synchronous serialization cost on the hot path.
 // ---------------------------------------------------------------------------
 
-/** Normalize meta to a plain object for Sentry / Winston compatibility. */
 function normalizeMeta(meta: LogMeta | undefined): Record<string, unknown> | undefined {
   if (meta === undefined || meta === null) return undefined;
   if (typeof meta === 'object' && !Array.isArray(meta)) return meta as Record<string, unknown>;
@@ -138,37 +167,45 @@ function normalizeMeta(meta: LogMeta | undefined): Record<string, unknown> | und
 }
 
 function sentryCaptureError(message: string, meta?: LogMeta): void {
-  try {
-    const normalized = normalizeMeta(meta);
-    const error =
-      meta instanceof Error ? meta : (normalized?.error instanceof Error ? normalized.error : new Error(message));
-    Sentry.captureException(error, { extra: normalized });
-  } catch {
-    // Sentry not initialized or DSN not set — silently skip
-  }
+  setImmediate(() => {
+    try {
+      const normalized = normalizeMeta(meta);
+      const error =
+        meta instanceof Error
+          ? meta
+          : normalized?.error instanceof Error
+            ? normalized.error
+            : new Error(message);
+      Sentry.captureException(error, { extra: normalized });
+    } catch {
+      // Sentry not initialized or DSN not set — silently skip
+    }
+  });
 }
 
 function sentryBreadcrumb(
   level: 'warning' | 'info' | 'debug',
   message: string,
-  meta?: LogMeta,
+  meta?: LogMeta
 ): void {
-  try {
-    Sentry.addBreadcrumb({
-      level,
-      message,
-      data: normalizeMeta(meta) as Record<string, unknown> | undefined,
-    });
-  } catch {
-    // Sentry not initialized — silently skip
-  }
+  setImmediate(() => {
+    try {
+      Sentry.addBreadcrumb({
+        level,
+        message,
+        data: normalizeMeta(meta) as Record<string, unknown> | undefined,
+      });
+    } catch {
+      // Sentry not initialized — silently skip
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------
 // Unified logger
 //
-// Server: Winston (file + console) + Sentry (errors)
-// Client: console + Sentry (errors)
+// Server: Winston (file + console) + Sentry (errors/breadcrumbs, deferred)
+// Client: console + Sentry (errors/breadcrumbs, deferred)
 // ---------------------------------------------------------------------------
 
 function createLogger(): Logger {
@@ -177,7 +214,6 @@ function createLogger(): Logger {
   return {
     error(message: string, meta?: LogMeta) {
       sentryCaptureError(message, meta);
-
       if (winston) {
         winston.error(message, meta);
       } else {
@@ -187,7 +223,6 @@ function createLogger(): Logger {
 
     warn(message: string, meta?: LogMeta) {
       sentryBreadcrumb('warning', message, meta);
-
       if (winston) {
         winston.warn(message, meta);
       } else {
@@ -197,7 +232,6 @@ function createLogger(): Logger {
 
     info(message: string, meta?: LogMeta) {
       sentryBreadcrumb('info', message, meta);
-
       if (winston) {
         winston.info(message, meta);
       } else {
@@ -207,7 +241,6 @@ function createLogger(): Logger {
 
     debug(message: string, meta?: LogMeta) {
       sentryBreadcrumb('debug', message, meta);
-
       if (winston) {
         winston.debug(message, meta);
       } else {
