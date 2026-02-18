@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 export type NotificationType =
   | 'login_new_device'
@@ -30,7 +31,7 @@ export async function createNotification(params: CreateNotificationParams) {
     });
   } catch (error) {
     // Non-critical — notification creation should never break the main flow
-    console.error('Failed to create notification:', error);
+    logger.error('Failed to create notification:', error);
   }
 }
 

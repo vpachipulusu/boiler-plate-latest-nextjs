@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { verifyWebhookSignature, handleWebhookEvent } from '@/lib/stripe/webhooks';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/webhooks/stripe
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const signature = headersList.get('stripe-signature');
 
     if (!signature) {
-      console.error('Missing stripe-signature header');
+      logger.error('Missing stripe-signature header');
       return NextResponse.json(
         { error: 'Missing signature header' },
         { status: 400 }
@@ -35,20 +36,20 @@ export async function POST(request: NextRequest) {
     try {
       event = verifyWebhookSignature(body, signature);
     } catch (error) {
-      console.error('Webhook signature verification failed:', error);
+      logger.error('Webhook signature verification failed:', error);
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
       );
     }
 
-    console.log(`Received webhook event: ${event.type}`);
+    logger.info(`Received webhook event: ${event.type}`);
 
     // Handle the event
     try {
       await handleWebhookEvent(event);
     } catch (error) {
-      console.error(`Error handling webhook event ${event.type}:`, error);
+      logger.error(`Error handling webhook event ${event.type}:`, error);
 
       // Return 200 to acknowledge receipt even if processing fails
       // This prevents Stripe from retrying immediately
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Webhook error:', error);
+    logger.error('Webhook error:', error);
 
     return NextResponse.json(
       { error: 'Webhook processing failed' },

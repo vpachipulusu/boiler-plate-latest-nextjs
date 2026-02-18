@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
         emailVerified: false,
       });
     } catch (error: any) {
-      console.error('Firebase user creation failed:', error);
+      logger.error('Firebase user creation failed:', error);
 
       // Handle specific Firebase errors
       if (error.code === 'auth/email-already-exists') {
@@ -144,20 +145,20 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     } catch (dbError) {
-      console.error('Database user creation failed:', dbError);
+      logger.error('Database user creation failed:', dbError);
 
       // Cleanup: Delete Firebase user if database creation fails
       try {
         await adminAuth.deleteUser(firebaseUser.uid);
-        console.log(`Cleaned up Firebase user: ${firebaseUser.uid}`);
+        logger.info(`Cleaned up Firebase user: ${firebaseUser.uid}`);
       } catch (cleanupError) {
-        console.error('Failed to cleanup Firebase user:', cleanupError);
+        logger.error('Failed to cleanup Firebase user:', cleanupError);
       }
 
       return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
     }
   } catch (error) {
-    console.error('Signup error:', error);
+    logger.error('Signup error:', error);
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 // Types
 // ---------------------------------------------------------------------------
 
-type LogMeta = Record<string, unknown>;
+type LogMeta = Record<string, unknown> | unknown;
 
 interface Logger {
   error(message: string, meta?: LogMeta): void;
@@ -130,11 +130,19 @@ function getWinstonLogger(): WinstonLogger | null {
 // Sentry helpers
 // ---------------------------------------------------------------------------
 
+/** Normalize meta to a plain object for Sentry / Winston compatibility. */
+function normalizeMeta(meta: LogMeta | undefined): Record<string, unknown> | undefined {
+  if (meta === undefined || meta === null) return undefined;
+  if (typeof meta === 'object' && !Array.isArray(meta)) return meta as Record<string, unknown>;
+  return { value: meta };
+}
+
 function sentryCaptureError(message: string, meta?: LogMeta): void {
   try {
+    const normalized = normalizeMeta(meta);
     const error =
-      meta?.error instanceof Error ? meta.error : new Error(message);
-    Sentry.captureException(error, { extra: meta });
+      meta instanceof Error ? meta : (normalized?.error instanceof Error ? normalized.error : new Error(message));
+    Sentry.captureException(error, { extra: normalized });
   } catch {
     // Sentry not initialized or DSN not set — silently skip
   }
@@ -149,7 +157,7 @@ function sentryBreadcrumb(
     Sentry.addBreadcrumb({
       level,
       message,
-      data: meta,
+      data: normalizeMeta(meta) as Record<string, unknown> | undefined,
     });
   } catch {
     // Sentry not initialized — silently skip

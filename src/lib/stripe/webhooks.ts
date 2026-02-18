@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { getSubscriptionTier } from './subscriptions';
 import { notifySubscriptionChanged, notifyPaymentFailed } from '@/lib/utils/notifications';
+import { logger } from '@/lib/logger';
 
 let stripeInstance: Stripe | null = null;
 
@@ -49,30 +50,30 @@ export function verifyWebhookSignature(payload: string | Buffer, signature: stri
  * Handle checkout session completed
  */
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  console.log('Processing checkout.session.completed event:', session.id);
+  logger.info('Processing checkout.session.completed event:', session.id);
 
   const userId = session.metadata?.userId;
 
   if (!userId) {
-    console.error('No userId in session metadata', { sessionId: session.id });
+    logger.error('No userId in session metadata', { sessionId: session.id });
     return;
   }
 
   const subscriptionId = session.subscription as string;
 
   if (!subscriptionId) {
-    console.error('No subscription ID in session', { sessionId: session.id, userId });
+    logger.error('No subscription ID in session', { sessionId: session.id, userId });
     return;
   }
 
-  console.log('Retrieving subscription details:', { userId, subscriptionId });
+  logger.info('Retrieving subscription details:', { userId, subscriptionId });
 
   // Retrieve subscription details
   const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
   const priceId = subscription.items.data[0]?.price.id;
   const tier = getSubscriptionTier(priceId || '');
 
-  console.log('Subscription details:', {
+  logger.info('Subscription details:', {
     userId,
     subscriptionId,
     priceId,
@@ -93,7 +94,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
     },
   });
 
-  console.log('User subscription updated successfully:', { userId, tier });
+  logger.info('User subscription updated successfully:', { userId, tier });
 
   // Create audit log
   await db.auditLog.create({
@@ -113,12 +114,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   try {
     revalidatePath('/admin/subscriptions');
     revalidatePath('/dashboard');
-    console.log('Revalidated admin and dashboard pages');
+    logger.info('Revalidated admin and dashboard pages');
   } catch (error) {
-    console.error('Error revalidating paths:', error);
+    logger.error('Error revalidating paths:', error);
   }
 
-  console.log(`Subscription created for user ${userId} with tier ${tier}`);
+  logger.info(`Subscription created for user ${userId} with tier ${tier}`);
 }
 
 /**
@@ -135,7 +136,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
       });
 
   if (!user) {
-    console.error('User not found for subscription update');
+    logger.error('User not found for subscription update');
     return;
   }
 
@@ -175,10 +176,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     revalidatePath('/admin/subscriptions');
     revalidatePath('/dashboard');
   } catch (error) {
-    console.error('Error revalidating paths:', error);
+    logger.error('Error revalidating paths:', error);
   }
 
-  console.log(`Subscription updated for user ${user.id}`);
+  logger.info(`Subscription updated for user ${user.id}`);
 }
 
 /**
@@ -190,7 +191,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   });
 
   if (!user) {
-    console.error('User not found for subscription deletion');
+    logger.error('User not found for subscription deletion');
     return;
   }
 
@@ -226,10 +227,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
     revalidatePath('/admin/subscriptions');
     revalidatePath('/dashboard');
   } catch (error) {
-    console.error('Error revalidating paths:', error);
+    logger.error('Error revalidating paths:', error);
   }
 
-  console.log(`Subscription canceled for user ${user.id}`);
+  logger.info(`Subscription canceled for user ${user.id}`);
 }
 
 /**
@@ -247,7 +248,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
   });
 
   if (!user) {
-    console.error('User not found for invoice payment');
+    logger.error('User not found for invoice payment');
     return;
   }
 
@@ -277,7 +278,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
     },
   });
 
-  console.log(`Invoice payment succeeded for user ${user.id}`);
+  logger.info(`Invoice payment succeeded for user ${user.id}`);
 }
 
 /**
@@ -295,7 +296,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
   });
 
   if (!user) {
-    console.error('User not found for invoice payment failure');
+    logger.error('User not found for invoice payment failure');
     return;
   }
 
@@ -332,7 +333,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
     },
   });
 
-  console.log(`Invoice payment failed for user ${user.id}`);
+  logger.info(`Invoice payment failed for user ${user.id}`);
 }
 
 /**
@@ -346,7 +347,7 @@ async function handleCustomerSubscriptionTrialWillEnd(
   });
 
   if (!user) {
-    console.error('User not found for trial ending notification');
+    logger.error('User not found for trial ending notification');
     return;
   }
 
@@ -361,7 +362,7 @@ async function handleCustomerSubscriptionTrialWillEnd(
     },
   });
 
-  console.log(`Trial ending notification sent to user ${user.id}`);
+  logger.info(`Trial ending notification sent to user ${user.id}`);
 }
 
 /**
@@ -396,10 +397,10 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info(`Unhandled event type: ${event.type}`);
     }
   } catch (error) {
-    console.error(`Error handling webhook event ${event.type}:`, error);
+    logger.error(`Error handling webhook event ${event.type}:`, error);
     throw error;
   }
 }

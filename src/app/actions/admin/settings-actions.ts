@@ -5,6 +5,7 @@ import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for admin settings actions
@@ -41,7 +42,7 @@ async function getAuthenticatedAdmin() {
 
     return user;
   } catch (error) {
-    console.error('Admin authentication error:', error);
+    logger.error('Admin authentication error:', error);
     return null;
   }
 }
@@ -91,7 +92,7 @@ export async function getAllAppSettingsAction(
       data: { settings },
     };
   } catch (error: any) {
-    console.error('Get all app settings error:', error);
+    logger.error('Get all app settings error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get app settings',
@@ -128,7 +129,7 @@ export async function getAppSettingByKeyAction(key: string): Promise<AdminSettin
       data: { setting },
     };
   } catch (error: any) {
-    console.error('Get app setting by key error:', error);
+    logger.error('Get app setting by key error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get app setting',
@@ -202,7 +203,7 @@ export async function upsertAppSettingAction(
       data: { setting },
     };
   } catch (error: any) {
-    console.error('Upsert app setting error:', error);
+    logger.error('Upsert app setting error:', error);
     return {
       success: false,
       error: error.message || 'Failed to save app setting',
@@ -242,7 +243,7 @@ export async function deleteAppSettingAction(key: string): Promise<AdminSettings
       data: { message: 'App setting deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete app setting error:', error);
+    logger.error('Delete app setting error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete app setting',
@@ -275,7 +276,7 @@ export async function getSettingsByCategoryAction(
       data: { settings },
     };
   } catch (error: any) {
-    console.error('Get settings by category error:', error);
+    logger.error('Get settings by category error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get settings',
@@ -315,7 +316,7 @@ export async function getAllFeatureFlagsAction(): Promise<AdminSettingsActionRes
       data: { featureFlags },
     };
   } catch (error: any) {
-    console.error('Get all feature flags error:', error);
+    logger.error('Get all feature flags error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get feature flags',
@@ -346,7 +347,7 @@ export async function getFeatureFlagByNameAction(
       data: { featureFlag },
     };
   } catch (error: any) {
-    console.error('Get feature flag by name error:', error);
+    logger.error('Get feature flag by name error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get feature flag',
@@ -410,7 +411,7 @@ export async function upsertFeatureFlagAction(
       data: { featureFlag },
     };
   } catch (error: any) {
-    console.error('Upsert feature flag error:', error);
+    logger.error('Upsert feature flag error:', error);
     return {
       success: false,
       error: error.message || 'Failed to save feature flag',
@@ -465,7 +466,7 @@ export async function toggleFeatureFlagAction(name: string): Promise<AdminSettin
       data: { featureFlag },
     };
   } catch (error: any) {
-    console.error('Toggle feature flag error:', error);
+    logger.error('Toggle feature flag error:', error);
     return {
       success: false,
       error: error.message || 'Failed to toggle feature flag',
@@ -505,7 +506,7 @@ export async function deleteFeatureFlagAction(name: string): Promise<AdminSettin
       data: { message: 'Feature flag deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete feature flag error:', error);
+    logger.error('Delete feature flag error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete feature flag',
@@ -546,7 +547,7 @@ export async function getAllEmailTemplatesAction(): Promise<AdminSettingsActionR
       data: { templates },
     };
   } catch (error: any) {
-    console.error('Get all email templates error:', error);
+    logger.error('Get all email templates error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get email templates',
@@ -585,7 +586,7 @@ export async function getEmailTemplateByNameAction(
       data: { template },
     };
   } catch (error: any) {
-    console.error('Get email template by name error:', error);
+    logger.error('Get email template by name error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get email template',
@@ -651,7 +652,7 @@ export async function upsertEmailTemplateAction(
       data: { template },
     };
   } catch (error: any) {
-    console.error('Upsert email template error:', error);
+    logger.error('Upsert email template error:', error);
     return {
       success: false,
       error: error.message || 'Failed to save email template',
@@ -693,7 +694,7 @@ export async function deleteEmailTemplateAction(
       data: { message: 'Email template deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete email template error:', error);
+    logger.error('Delete email template error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete email template',
@@ -760,7 +761,7 @@ export async function getAuditLogsAction(
       },
     };
   } catch (error: any) {
-    console.error('Get audit logs error:', error);
+    logger.error('Get audit logs error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get audit logs',
@@ -812,7 +813,7 @@ export async function getSystemStatsAction(): Promise<AdminSettingsActionRespons
       },
     };
   } catch (error: any) {
-    console.error('Get system stats error:', error);
+    logger.error('Get system stats error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get system statistics',
@@ -892,7 +893,7 @@ export async function bulkUpdateSettingsAction(
       },
     };
   } catch (error: any) {
-    console.error('Bulk update settings error:', error);
+    logger.error('Bulk update settings error:', error);
     return {
       success: false,
       error: error.message || 'Failed to bulk update settings',

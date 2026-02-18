@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for notification actions
@@ -33,7 +34,7 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 
     return user?.id || null;
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication error:', error);
     return null;
   }
 }
@@ -74,7 +75,7 @@ export async function getNotificationsAction(
       },
     };
   } catch (error: any) {
-    console.error('Get notifications error:', error);
+    logger.error('Get notifications error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get notifications',
@@ -123,7 +124,7 @@ export async function markNotificationAsReadAction(
       data: { message: 'Notification marked as read' },
     };
   } catch (error: any) {
-    console.error('Mark notification as read error:', error);
+    logger.error('Mark notification as read error:', error);
     return {
       success: false,
       error: error.message || 'Failed to mark notification as read',
@@ -159,7 +160,7 @@ export async function markAllNotificationsAsReadAction(): Promise<NotificationAc
       data: { count: result.count },
     };
   } catch (error: any) {
-    console.error('Mark all notifications as read error:', error);
+    logger.error('Mark all notifications as read error:', error);
     return {
       success: false,
       error: error.message || 'Failed to mark all notifications as read',
@@ -207,7 +208,7 @@ export async function deleteNotificationAction(
       data: { message: 'Notification deleted' },
     };
   } catch (error: any) {
-    console.error('Delete notification error:', error);
+    logger.error('Delete notification error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete notification',

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for admin user actions
@@ -40,7 +41,7 @@ async function getAuthenticatedAdmin() {
 
     return user;
   } catch (error) {
-    console.error('Admin authentication error:', error);
+    logger.error('Admin authentication error:', error);
     return null;
   }
 }
@@ -147,7 +148,7 @@ export async function getAllUsersAction(
       },
     };
   } catch (error: any) {
-    console.error('Get all users error:', error);
+    logger.error('Get all users error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get users',
@@ -196,7 +197,7 @@ export async function getUserByIdAction(userId: string): Promise<AdminUserAction
       data: { user },
     };
   } catch (error: any) {
-    console.error('Get user by ID error:', error);
+    logger.error('Get user by ID error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get user',
@@ -268,7 +269,7 @@ export async function updateUserAction(
       data: { user: updatedUser },
     };
   } catch (error: any) {
-    console.error('Update user error:', error);
+    logger.error('Update user error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update user',
@@ -305,7 +306,7 @@ export async function deleteUserAction(userId: string): Promise<AdminUserActionR
     try {
       await adminAuth.deleteUser(user.firebaseUid);
     } catch (error) {
-      console.error('Firebase delete error:', error);
+      logger.error('Firebase delete error:', error);
     }
 
     // Delete from database
@@ -329,7 +330,7 @@ export async function deleteUserAction(userId: string): Promise<AdminUserActionR
       data: { message: 'User deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete user error:', error);
+    logger.error('Delete user error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete user',
@@ -400,7 +401,7 @@ export async function grantAdminRoleAction(
       data: { adminUser },
     };
   } catch (error: any) {
-    console.error('Grant admin role error:', error);
+    logger.error('Grant admin role error:', error);
     return {
       success: false,
       error: error.message || 'Failed to grant admin role',
@@ -441,7 +442,7 @@ export async function revokeAdminRoleAction(userId: string): Promise<AdminUserAc
       data: { message: 'Admin role revoked successfully' },
     };
   } catch (error: any) {
-    console.error('Revoke admin role error:', error);
+    logger.error('Revoke admin role error:', error);
     return {
       success: false,
       error: error.message || 'Failed to revoke admin role',
@@ -493,7 +494,7 @@ export async function getUserStatsAction(): Promise<AdminUserActionResponse> {
       },
     };
   } catch (error: any) {
-    console.error('Get user stats error:', error);
+    logger.error('Get user stats error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get user statistics',
@@ -546,7 +547,7 @@ export async function banUserAction(userId: string, reason?: string): Promise<Ad
       data: { message: 'User banned successfully' },
     };
   } catch (error: any) {
-    console.error('Ban user error:', error);
+    logger.error('Ban user error:', error);
     return {
       success: false,
       error: error.message || 'Failed to ban user',
@@ -598,7 +599,7 @@ export async function unbanUserAction(userId: string): Promise<AdminUserActionRe
       data: { message: 'User unbanned successfully' },
     };
   } catch (error: any) {
-    console.error('Unban user error:', error);
+    logger.error('Unban user error:', error);
     return {
       success: false,
       error: error.message || 'Failed to unban user',
@@ -638,7 +639,7 @@ export async function sendUserNotificationAction(
       data: { message: 'Notification sent successfully' },
     };
   } catch (error: any) {
-    console.error('Send notification error:', error);
+    logger.error('Send notification error:', error);
     return {
       success: false,
       error: error.message || 'Failed to send notification',

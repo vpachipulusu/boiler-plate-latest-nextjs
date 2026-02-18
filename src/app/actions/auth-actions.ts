@@ -9,6 +9,7 @@ import { db } from '@/lib/db/client';
 import { emailSchema, passwordSchema } from '@/lib/utils/validation';
 import { getLocationFromIP } from '@/lib/utils/geo-ip';
 import { notifyNewDeviceLogin, notifyEmailVerified } from '@/lib/utils/notifications';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for auth actions
@@ -57,7 +58,7 @@ export async function loginAction(email: string, password: string): Promise<Auth
       data: { message: 'Login validation successful' },
     };
   } catch (error: any) {
-    console.error('Login action error:', error);
+    logger.error('Login action error:', error);
     return {
       success: false,
       error: error.message || 'Login failed',
@@ -90,7 +91,7 @@ export async function signUpAction(
       data: { message: 'Signup validation successful' },
     };
   } catch (error: any) {
-    console.error('Signup action error:', error);
+    logger.error('Signup action error:', error);
     return {
       success: false,
       error: error.message || 'Signup failed',
@@ -114,7 +115,7 @@ export async function logoutAction(): Promise<AuthActionResponse> {
         await adminAuth.revokeRefreshTokens(decodedClaims.uid);
       } catch (error) {
         // Session may be expired/invalid, still proceed with cookie deletion
-        console.error('Token revocation during logout failed:', error);
+        logger.error('Token revocation during logout failed:', error);
       }
     }
 
@@ -126,7 +127,7 @@ export async function logoutAction(): Promise<AuthActionResponse> {
       data: { message: 'Logged out successfully' },
     };
   } catch (error: any) {
-    console.error('Logout action error:', error);
+    logger.error('Logout action error:', error);
     return {
       success: false,
       error: error.message || 'Logout failed',
@@ -284,7 +285,7 @@ export async function verifyTokenAction(
       },
     };
   } catch (error: any) {
-    console.error('Verify token error:', error);
+    logger.error('Verify token error:', error);
     return {
       success: false,
       error: error.message || 'Token verification failed',
@@ -325,7 +326,7 @@ export async function syncUserAction(firebaseUid: string): Promise<AuthActionRes
       data: { user },
     };
   } catch (error: any) {
-    console.error('Sync user error:', error);
+    logger.error('Sync user error:', error);
     return {
       success: false,
       error: error.message || 'User sync failed',
@@ -385,7 +386,7 @@ export async function getCurrentSessionAction(): Promise<AuthActionResponse> {
       },
     };
   } catch (error: any) {
-    console.error('Get session error:', error);
+    logger.error('Get session error:', error);
     // Clear stale cookie on verification failure
     const cookieStore = await cookies();
     cookieStore.delete('session');
@@ -419,7 +420,7 @@ export async function requestPasswordResetAction(email: string): Promise<AuthAct
       data: { message: 'Password reset email sent', resetLink },
     };
   } catch (error: any) {
-    console.error('Password reset error:', error);
+    logger.error('Password reset error:', error);
     return {
       success: false,
       error: error.message || 'Password reset failed',
@@ -440,7 +441,7 @@ export async function verifyEmailAction(oobCode: string): Promise<AuthActionResp
       data: { message: 'Email verified successfully' },
     };
   } catch (error: any) {
-    console.error('Email verification error:', error);
+    logger.error('Email verification error:', error);
     return {
       success: false,
       error: error.message || 'Email verification failed',

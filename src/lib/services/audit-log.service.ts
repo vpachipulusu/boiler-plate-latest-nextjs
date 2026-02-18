@@ -3,6 +3,7 @@
 import { db } from '@/lib/db/client';
 import { cookies } from 'next/headers';
 import { adminAuth } from '@/lib/firebase/admin';
+import { logger } from '@/lib/logger';
 
 export interface LogAuditParams {
   action: string;
@@ -33,7 +34,7 @@ export async function logAdminAction(params: LogAuditParams) {
         });
         userId = user?.id;
       } catch (error) {
-        console.error('Error getting user for audit log:', error);
+        logger.error('Error getting user for audit log:', error);
       }
     }
 
@@ -52,7 +53,7 @@ export async function logAdminAction(params: LogAuditParams) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error logging audit action:', error);
+    logger.error('Error logging audit action:', error);
     return { success: false, error: 'Failed to log audit action' };
   }
 }
@@ -99,7 +100,7 @@ export async function getAuditLogs(filters?: {
       },
     };
   } catch (error) {
-    console.error('Error getting audit logs:', error);
+    logger.error('Error getting audit logs:', error);
     return { success: false, error: 'Failed to get audit logs' };
   }
 }
@@ -134,7 +135,7 @@ export async function cleanupOldAuditLogs(retentionDays = 90) {
       data: { deletedCount: result.count },
     };
   } catch (error) {
-    console.error('Error cleaning up audit logs:', error);
+    logger.error('Error cleaning up audit logs:', error);
     return { success: false, error: 'Failed to cleanup audit logs' };
   }
 }

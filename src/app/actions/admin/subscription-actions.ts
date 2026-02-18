@@ -5,6 +5,7 @@ import { z } from 'zod';
 import Stripe from 'stripe';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Initialize Stripe
@@ -49,7 +50,7 @@ async function getAuthenticatedAdmin() {
 
     return user;
   } catch (error) {
-    console.error('Admin authentication error:', error);
+    logger.error('Admin authentication error:', error);
     return null;
   }
 }
@@ -131,7 +132,7 @@ export async function getAllSubscriptionsAction(
       },
     };
   } catch (error: any) {
-    console.error('Get all subscriptions error:', error);
+    logger.error('Get all subscriptions error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get subscriptions',
@@ -205,7 +206,7 @@ export async function getSubscriptionStatsAction(): Promise<AdminSubscriptionAct
       },
     };
   } catch (error: any) {
-    console.error('Get subscription stats error:', error);
+    logger.error('Get subscription stats error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get subscription statistics',
@@ -258,7 +259,7 @@ export async function getUserSubscriptionDetailsAction(
       try {
         stripeSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
       } catch (error) {
-        console.error('Failed to retrieve Stripe subscription:', error);
+        logger.error('Failed to retrieve Stripe subscription:', error);
       }
     }
 
@@ -271,7 +272,7 @@ export async function getUserSubscriptionDetailsAction(
         });
         stripeInvoices = invoices.data;
       } catch (error) {
-        console.error('Failed to retrieve Stripe invoices:', error);
+        logger.error('Failed to retrieve Stripe invoices:', error);
       }
     }
 
@@ -284,7 +285,7 @@ export async function getUserSubscriptionDetailsAction(
       },
     };
   } catch (error: any) {
-    console.error('Get user subscription details error:', error);
+    logger.error('Get user subscription details error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get subscription details',
@@ -353,7 +354,7 @@ export async function updateUserSubscriptionAction(
       data: { user: updatedUser },
     };
   } catch (error: any) {
-    console.error('Update user subscription error:', error);
+    logger.error('Update user subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update subscription',
@@ -429,7 +430,7 @@ export async function cancelUserSubscriptionAction(
       },
     };
   } catch (error: any) {
-    console.error('Cancel user subscription error:', error);
+    logger.error('Cancel user subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to cancel subscription',
@@ -513,7 +514,7 @@ export async function refundSubscriptionPaymentAction(
       },
     };
   } catch (error: any) {
-    console.error('Refund subscription payment error:', error);
+    logger.error('Refund subscription payment error:', error);
     return {
       success: false,
       error: error.message || 'Failed to process refund',
@@ -574,7 +575,7 @@ export async function grantFreeSubscriptionAction(
       },
     };
   } catch (error: any) {
-    console.error('Grant free subscription error:', error);
+    logger.error('Grant free subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to grant subscription',
@@ -634,7 +635,7 @@ export async function getSubscriptionRevenueAction(
           revenueByMonth[monthKey] = (revenueByMonth[monthKey] || 0) + invoice.amount_paid;
         });
       } catch (error) {
-        console.error(`Failed to fetch invoices for customer ${customerId}:`, error);
+        logger.error(`Failed to fetch invoices for customer ${customerId}:`, error);
       }
     }
 
@@ -649,7 +650,7 @@ export async function getSubscriptionRevenueAction(
       },
     };
   } catch (error: any) {
-    console.error('Get subscription revenue error:', error);
+    logger.error('Get subscription revenue error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get revenue data',
@@ -694,7 +695,7 @@ export async function syncStripeSubscriptionsAction(): Promise<AdminSubscription
 
         syncedCount++;
       } catch (error) {
-        console.error(`Failed to sync subscription for user ${user.id}:`, error);
+        logger.error(`Failed to sync subscription for user ${user.id}:`, error);
         errorCount++;
       }
     }
@@ -708,7 +709,7 @@ export async function syncStripeSubscriptionsAction(): Promise<AdminSubscription
       },
     };
   } catch (error: any) {
-    console.error('Sync Stripe subscriptions error:', error);
+    logger.error('Sync Stripe subscriptions error:', error);
     return {
       success: false,
       error: error.message || 'Failed to sync subscriptions',

@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import Stripe from 'stripe';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 export const SUBSCRIPTION_TIERS = {
   FREE: 'free',
@@ -105,7 +106,7 @@ export const subscriptionPlans: SubscriptionPlan[] = [
 async function fetchStripePrices(): Promise<StripePrices> {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.warn('STRIPE_SECRET_KEY not set, using fallback prices');
+      logger.warn('STRIPE_SECRET_KEY not set, using fallback prices');
       return FALLBACK_PRICES;
     }
 
@@ -122,7 +123,7 @@ async function fetchStripePrices(): Promise<StripePrices> {
     ].filter(Boolean) as string[];
 
     if (priceIds.length === 0) {
-      console.warn('No Stripe price IDs configured, using fallback prices');
+      logger.warn('No Stripe price IDs configured, using fallback prices');
       return FALLBACK_PRICES;
     }
 
@@ -146,7 +147,7 @@ async function fetchStripePrices(): Promise<StripePrices> {
       },
     };
   } catch (error) {
-    console.error('Failed to fetch Stripe prices:', error);
+    logger.error('Failed to fetch Stripe prices:', error);
     return FALLBACK_PRICES;
   }
 }

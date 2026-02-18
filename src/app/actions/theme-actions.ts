@@ -3,6 +3,7 @@
 import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { DEFAULT_THEME } from '@/config/themes';
+import { logger } from '@/lib/logger';
 
 /**
  * Fetch the active theme name from AppSettings.
@@ -23,7 +24,7 @@ async function fetchActiveTheme(): Promise<string> {
 
     return themeName || DEFAULT_THEME;
   } catch (error) {
-    console.error('Failed to fetch active theme:', error);
+    logger.error('Failed to fetch active theme:', error);
     return DEFAULT_THEME;
   }
 }

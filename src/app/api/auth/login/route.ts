@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 const loginSchema = z.object({
   idToken: z.string().min(1, 'ID token is required'),
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
     } catch (error) {
-      console.error('Token verification failed:', error);
+      logger.error('Token verification failed:', error);
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
 
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      console.log(`New user created: ${user.id}`);
+      logger.info(`New user created: ${user.id}`);
     } else {
       // Update last login time
       user = await db.user.update({
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
 
     // Log failed login attempt if we have enough info
     try {

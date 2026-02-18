@@ -7,6 +7,7 @@
 import { NextRequest } from 'next/server';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 export interface AdminAuthResult {
   success: boolean;
@@ -45,7 +46,7 @@ export async function verifyAdminAuth(
     try {
       decodedToken = await adminAuth.verifyIdToken(token);
     } catch (error) {
-      console.error('Token verification failed:', error);
+      logger.error('Token verification failed:', error);
       return {
         success: false,
         error: 'Invalid or expired token',
@@ -105,7 +106,7 @@ export async function verifyAdminAuth(
       permissions,
     };
   } catch (error) {
-    console.error('Admin auth verification error:', error);
+    logger.error('Admin auth verification error:', error);
     return {
       success: false,
       error: 'Authentication verification failed',

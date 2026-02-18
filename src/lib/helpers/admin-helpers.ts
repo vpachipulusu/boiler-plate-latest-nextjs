@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 export interface AdminUser {
   id: string;
@@ -47,7 +48,7 @@ export async function requireAdmin(): Promise<AdminUser> {
       permissions: user.adminUser.permissions as string[],
     };
   } catch (error) {
-    console.error('Admin auth error:', error);
+    logger.error('Admin auth error:', error);
     redirect('/login');
   }
 }
@@ -133,7 +134,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
       permissions: user.adminUser.permissions as string[],
     };
   } catch (error) {
-    console.error('Get current admin error:', error);
+    logger.error('Get current admin error:', error);
     return null;
   }
 }

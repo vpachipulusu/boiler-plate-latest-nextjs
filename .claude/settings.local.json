@@ -25,7 +25,8 @@
       "Bash(powershell:*)",
       "Bash(del \"c:\\\\MainData\\\\NewSourceCode\\\\boiler-plate-latest-nextjs\\\\add-path.ps1\")",
       "Bash(npm run typecheck:*)",
-      "Bash(claude:*)"
+      "Bash(claude:*)",
+      "Bash(pnpm typecheck:*)"
     ]
   }
 }

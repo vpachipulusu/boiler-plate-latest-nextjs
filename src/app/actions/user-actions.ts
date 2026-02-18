@@ -8,6 +8,7 @@ import { profileUpdateSchema, userSettingsSchema } from '@/lib/utils/validation'
 import { cancelSubscription } from '@/lib/stripe/subscriptions';
 import { notifyPasswordChanged } from '@/lib/utils/notifications';
 import { generateTOTPSecret, verifyTOTPToken } from '@/lib/utils/totp';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for user actions
@@ -38,7 +39,7 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 
     return user?.id || null;
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication error:', error);
     return null;
   }
 }
@@ -91,7 +92,7 @@ export async function getUserProfileAction(): Promise<UserActionResponse> {
       },
     };
   } catch (error: any) {
-    console.error('Get user profile error:', error);
+    logger.error('Get user profile error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get user profile',
@@ -140,7 +141,7 @@ export async function updateUserProfileAction(
       data: { user: updatedUser },
     };
   } catch (error: any) {
-    console.error('Update user profile error:', error);
+    logger.error('Update user profile error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update profile',
@@ -182,7 +183,7 @@ export async function updateUserAvatarAction(avatarUrl: string): Promise<UserAct
       data: { avatarUrl: updatedUser.avatarUrl },
     };
   } catch (error: any) {
-    console.error('Update avatar error:', error);
+    logger.error('Update avatar error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update avatar',
@@ -219,7 +220,7 @@ export async function getUserSettingsAction(): Promise<UserActionResponse> {
       data: { settings },
     };
   } catch (error: any) {
-    console.error('Get user settings error:', error);
+    logger.error('Get user settings error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get settings',
@@ -274,7 +275,7 @@ export async function updateUserSettingsAction(
       data: { settings },
     };
   } catch (error: any) {
-    console.error('Update user settings error:', error);
+    logger.error('Update user settings error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update settings',
@@ -322,7 +323,7 @@ export async function getUserNotificationsAction(
       },
     };
   } catch (error: any) {
-    console.error('Get notifications error:', error);
+    logger.error('Get notifications error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get notifications',
@@ -368,7 +369,7 @@ export async function markNotificationReadAction(
       data: { message: 'Notification marked as read' },
     };
   } catch (error: any) {
-    console.error('Mark notification read error:', error);
+    logger.error('Mark notification read error:', error);
     return {
       success: false,
       error: error.message || 'Failed to mark notification as read',
@@ -399,7 +400,7 @@ export async function markAllNotificationsReadAction(): Promise<UserActionRespon
       data: { message: 'All notifications marked as read' },
     };
   } catch (error: any) {
-    console.error('Mark all notifications read error:', error);
+    logger.error('Mark all notifications read error:', error);
     return {
       success: false,
       error: error.message || 'Failed to mark all notifications as read',
@@ -444,7 +445,7 @@ export async function deleteNotificationAction(
       data: { message: 'Notification deleted' },
     };
   } catch (error: any) {
-    console.error('Delete notification error:', error);
+    logger.error('Delete notification error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete notification',
@@ -487,7 +488,7 @@ export async function getUserLoginHistoryAction(
       },
     };
   } catch (error: any) {
-    console.error('Get login history error:', error);
+    logger.error('Get login history error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get login history',
@@ -574,7 +575,7 @@ export async function changePasswordAction(
       data: { message: 'Password changed successfully' },
     };
   } catch (error: any) {
-    console.error('Change password error:', error);
+    logger.error('Change password error:', error);
     return {
       success: false,
       error: error.message || 'Failed to change password',
@@ -651,7 +652,7 @@ export async function exportUserDataAction(): Promise<UserActionResponse> {
       data: exportData,
     };
   } catch (error: any) {
-    console.error('Export data error:', error);
+    logger.error('Export data error:', error);
     return {
       success: false,
       error: error.message || 'Failed to export data',
@@ -691,7 +692,7 @@ export async function getLoginHistoryAction(limit = 10, offset = 0): Promise<Use
       },
     };
   } catch (error: any) {
-    console.error('Get login history error:', error);
+    logger.error('Get login history error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get login history',
@@ -729,7 +730,7 @@ export async function deleteAccountAction(): Promise<UserActionResponse> {
       try {
         await cancelSubscription(user.id, true);
       } catch (stripeError) {
-        console.error('Failed to cancel Stripe subscription during account deletion:', stripeError);
+        logger.error('Failed to cancel Stripe subscription during account deletion:', stripeError);
         // Continue with deletion even if Stripe cancellation fails
       }
     }
@@ -752,7 +753,7 @@ export async function deleteAccountAction(): Promise<UserActionResponse> {
       data: { message: 'Account deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete account error:', error);
+    logger.error('Delete account error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete account',
@@ -789,7 +790,7 @@ export async function initiate2FASetupAction(): Promise<UserActionResponse> {
 
     return { success: true, data: { uri, secret } };
   } catch (error: any) {
-    console.error('Initiate 2FA setup error:', error);
+    logger.error('Initiate 2FA setup error:', error);
     return { success: false, error: error.message || 'Failed to initiate 2FA setup' };
   }
 }
@@ -817,7 +818,7 @@ export async function verify2FASetupAction(token: string): Promise<UserActionRes
 
     return { success: true, data: { message: '2FA enabled successfully' } };
   } catch (error: any) {
-    console.error('Verify 2FA setup error:', error);
+    logger.error('Verify 2FA setup error:', error);
     return { success: false, error: error.message || 'Failed to verify 2FA setup' };
   }
 }
@@ -845,7 +846,7 @@ export async function disable2FAAction(token: string): Promise<UserActionRespons
 
     return { success: true, data: { message: '2FA disabled successfully' } };
   } catch (error: any) {
-    console.error('Disable 2FA error:', error);
+    logger.error('Disable 2FA error:', error);
     return { success: false, error: error.message || 'Failed to disable 2FA' };
   }
 }
@@ -870,7 +871,7 @@ export async function get2FAStatusAction(): Promise<UserActionResponse> {
       data: { twoFactorEnabled: user.twoFactorEnabled },
     };
   } catch (error: any) {
-    console.error('Get 2FA status error:', error);
+    logger.error('Get 2FA status error:', error);
     return { success: false, error: error.message || 'Failed to get 2FA status' };
   }
 }

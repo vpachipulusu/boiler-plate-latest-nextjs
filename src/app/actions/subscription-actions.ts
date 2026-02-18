@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 /**
  * Initialize Stripe
@@ -44,7 +45,7 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 
     return user?.id || null;
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication error:', error);
     return null;
   }
 }
@@ -147,7 +148,7 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
             : null,
         };
       } catch (error) {
-        console.error('Failed to retrieve Stripe subscription:', error);
+        logger.error('Failed to retrieve Stripe subscription:', error);
       }
     }
 
@@ -161,7 +162,7 @@ export async function getSubscriptionStatusAction(): Promise<SubscriptionActionR
       },
     };
   } catch (error: any) {
-    console.error('Get subscription status error:', error);
+    logger.error('Get subscription status error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get subscription status',
@@ -291,7 +292,7 @@ export async function createCheckoutSessionAction(
       },
     };
   } catch (error: any) {
-    console.error('Create checkout session error:', error);
+    logger.error('Create checkout session error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create checkout session',
@@ -370,7 +371,7 @@ export async function verifyUpgradeSessionAction(): Promise<
       },
     };
   } catch (error: any) {
-    console.error('Verify upgrade session error:', error);
+    logger.error('Verify upgrade session error:', error);
     return {
       success: false,
       error: error.message || 'Failed to verify upgrade session',
@@ -418,7 +419,7 @@ export async function createBillingPortalSessionAction(
       },
     };
   } catch (error: any) {
-    console.error('Create billing portal session error:', error);
+    logger.error('Create billing portal session error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create billing portal session',
@@ -464,7 +465,7 @@ export async function cancelSubscriptionAction(): Promise<SubscriptionActionResp
       },
     };
   } catch (error: any) {
-    console.error('Cancel subscription error:', error);
+    logger.error('Cancel subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to cancel subscription',
@@ -544,7 +545,7 @@ export async function resumeSubscriptionAction(): Promise<SubscriptionActionResp
       },
     };
   } catch (error: any) {
-    console.error('Resume subscription error:', error);
+    logger.error('Resume subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to resume subscription',
@@ -604,7 +605,7 @@ export async function updateSubscriptionAction(
       },
     };
   } catch (error: any) {
-    console.error('Update subscription error:', error);
+    logger.error('Update subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update subscription',
@@ -663,7 +664,7 @@ export async function getSubscriptionInvoicesAction(
       },
     };
   } catch (error: any) {
-    console.error('Get invoices error:', error);
+    logger.error('Get invoices error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get invoices',
@@ -711,7 +712,7 @@ export async function getUpcomingInvoiceAction(): Promise<SubscriptionActionResp
       },
     };
   } catch (error: any) {
-    console.error('Get upcoming invoice error:', error);
+    logger.error('Get upcoming invoice error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get upcoming invoice',
@@ -759,7 +760,7 @@ export async function hasActiveSubscriptionAction(): Promise<SubscriptionActionR
       },
     };
   } catch (error: any) {
-    console.error('Check active subscription error:', error);
+    logger.error('Check active subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to check subscription status',
@@ -815,7 +816,7 @@ export async function getSubscriptionDetailsAction(): Promise<SubscriptionAction
           billingPeriod = price.recurring.interval === 'year' ? 'yearly' : 'monthly';
         }
       } catch (error) {
-        console.error('Failed to retrieve Stripe subscription:', error);
+        logger.error('Failed to retrieve Stripe subscription:', error);
       }
     }
 
@@ -837,7 +838,7 @@ export async function getSubscriptionDetailsAction(): Promise<SubscriptionAction
       },
     };
   } catch (error: any) {
-    console.error('Get subscription details error:', error);
+    logger.error('Get subscription details error:', error);
     return { success: false, error: error.message || 'Failed to get subscription details' };
   }
 }
@@ -890,7 +891,7 @@ export async function getPaymentMethodsAction(): Promise<SubscriptionActionRespo
       data: { paymentMethods: formatted, defaultPaymentMethodId },
     };
   } catch (error: any) {
-    console.error('Get payment methods error:', error);
+    logger.error('Get payment methods error:', error);
     return { success: false, error: error.message || 'Failed to get payment methods' };
   }
 }
@@ -952,7 +953,7 @@ export async function deletePaymentMethodAction(
 
     return { success: true, data: { message: 'Payment method removed' } };
   } catch (error: any) {
-    console.error('Delete payment method error:', error);
+    logger.error('Delete payment method error:', error);
     return { success: false, error: error.message || 'Failed to delete payment method' };
   }
 }
@@ -1009,13 +1010,13 @@ export async function setDefaultPaymentMethodAction(
       } catch (subError) {
         // Subscription update may fail if subscription is in certain states;
         // customer-level default is already set so this is non-critical
-        console.error('Failed to update subscription default payment method:', subError);
+        logger.error('Failed to update subscription default payment method:', subError);
       }
     }
 
     return { success: true, data: { message: 'Default payment method updated' } };
   } catch (error: any) {
-    console.error('Set default payment method error:', error);
+    logger.error('Set default payment method error:', error);
     return { success: false, error: error.message || 'Failed to set default payment method' };
   }
 }

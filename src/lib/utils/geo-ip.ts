@@ -4,6 +4,8 @@
  * For production, consider a paid service or local GeoIP database
  */
 
+import { logger } from '@/lib/logger';
+
 export async function getLocationFromIP(ip: string): Promise<string | null> {
   // Skip private/local IPs
   if (
@@ -36,7 +38,7 @@ export async function getLocationFromIP(ip: string): Promise<string | null> {
 
     return null;
   } catch (error) {
-    console.error('Geo IP lookup failed:', error);
+    logger.error('Geo IP lookup failed:', error);
     return null;
   }
 }

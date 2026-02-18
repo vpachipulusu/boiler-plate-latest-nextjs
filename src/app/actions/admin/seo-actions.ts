@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Response type for admin SEO actions
@@ -40,7 +41,7 @@ async function getAuthenticatedAdmin() {
 
     return user;
   } catch (error) {
-    console.error('Admin authentication error:', error);
+    logger.error('Admin authentication error:', error);
     return null;
   }
 }
@@ -92,7 +93,7 @@ export async function getAllSEOMetaAction(): Promise<AdminSEOActionResponse> {
       data: { seoMeta },
     };
   } catch (error: any) {
-    console.error('Get all SEO meta error:', error);
+    logger.error('Get all SEO meta error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get SEO meta',
@@ -129,7 +130,7 @@ export async function getSEOMetaByPageAction(page: string): Promise<AdminSEOActi
       data: { seoMeta },
     };
   } catch (error: any) {
-    console.error('Get SEO meta by page error:', error);
+    logger.error('Get SEO meta by page error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get SEO meta',
@@ -207,7 +208,7 @@ export async function upsertSEOMetaAction(
       data: { seoMeta },
     };
   } catch (error: any) {
-    console.error('Upsert SEO meta error:', error);
+    logger.error('Upsert SEO meta error:', error);
     return {
       success: false,
       error: error.message || 'Failed to save SEO meta',
@@ -247,7 +248,7 @@ export async function deleteSEOMetaAction(page: string): Promise<AdminSEOActionR
       data: { message: 'SEO meta deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete SEO meta error:', error);
+    logger.error('Delete SEO meta error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete SEO meta',
@@ -287,7 +288,7 @@ export async function getAllURLRedirectsAction(): Promise<AdminSEOActionResponse
       data: { redirects },
     };
   } catch (error: any) {
-    console.error('Get all URL redirects error:', error);
+    logger.error('Get all URL redirects error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get URL redirects',
@@ -345,7 +346,7 @@ export async function createURLRedirectAction(
       data: { redirect },
     };
   } catch (error: any) {
-    console.error('Create URL redirect error:', error);
+    logger.error('Create URL redirect error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create URL redirect',
@@ -405,7 +406,7 @@ export async function updateURLRedirectAction(
       data: { redirect },
     };
   } catch (error: any) {
-    console.error('Update URL redirect error:', error);
+    logger.error('Update URL redirect error:', error);
     return {
       success: false,
       error: error.message || 'Failed to update URL redirect',
@@ -445,7 +446,7 @@ export async function deleteURLRedirectAction(id: string): Promise<AdminSEOActio
       data: { message: 'URL redirect deleted successfully' },
     };
   } catch (error: any) {
-    console.error('Delete URL redirect error:', error);
+    logger.error('Delete URL redirect error:', error);
     return {
       success: false,
       error: error.message || 'Failed to delete URL redirect',
@@ -489,7 +490,7 @@ export async function toggleURLRedirectAction(id: string): Promise<AdminSEOActio
       data: { redirect },
     };
   } catch (error: any) {
-    console.error('Toggle URL redirect error:', error);
+    logger.error('Toggle URL redirect error:', error);
     return {
       success: false,
       error: error.message || 'Failed to toggle URL redirect',
@@ -521,7 +522,7 @@ export async function getActiveRedirectAction(fromPath: string): Promise<AdminSE
       data: { redirect },
     };
   } catch (error: any) {
-    console.error('Get active redirect error:', error);
+    logger.error('Get active redirect error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get redirect',
@@ -615,7 +616,7 @@ export async function bulkImportSEOMetaAction(
       },
     };
   } catch (error: any) {
-    console.error('Bulk import SEO meta error:', error);
+    logger.error('Bulk import SEO meta error:', error);
     return {
       success: false,
       error: error.message || 'Failed to bulk import SEO meta',

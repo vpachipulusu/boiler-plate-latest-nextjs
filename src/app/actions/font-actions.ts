@@ -8,6 +8,7 @@
 import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { DEFAULT_FONT, type FontId } from '@/config/fonts';
+import { logger } from '@/lib/logger';
 
 /**
  * Fetch the active font from AppSettings.
@@ -27,7 +28,7 @@ async function fetchActiveFont(): Promise<FontId> {
 
     return (fontId as FontId) || DEFAULT_FONT;
   } catch (error) {
-    console.error('Failed to fetch active font:', error);
+    logger.error('Failed to fetch active font:', error);
     return DEFAULT_FONT;
   }
 }

@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase/admin';
 import { db } from '@/lib/db/client';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/auth/logout
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
         firebaseUid = decoded.uid;
       }
     } catch (error) {
-      console.error('Token verification failed during logout:', error);
+      logger.error('Token verification failed during logout:', error);
       // Token invalid/expired, but still clear cookie
       const response = NextResponse.json(
         { success: true, message: 'Logged out successfully' },
@@ -61,9 +62,9 @@ export async function POST(request: NextRequest) {
     // Revoke all refresh tokens for this user
     try {
       await adminAuth.revokeRefreshTokens(firebaseUid);
-      console.log(`Revoked tokens for user: ${firebaseUid}`);
+      logger.info(`Revoked tokens for user: ${firebaseUid}`);
     } catch (error) {
-      console.error('Error revoking tokens:', error);
+      logger.error('Error revoking tokens:', error);
       // Continue with logout even if revocation fails
     }
 
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error:', error);
 
     // Even on error, clear the cookie
     const response = NextResponse.json(
