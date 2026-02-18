@@ -10,6 +10,7 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from './client';
+import { getFirebaseErrorMessage } from '@/lib/utils/firebase-errors';
 
 /**
  * Sign in with email and password
@@ -20,7 +21,7 @@ export async function signInWithEmail(email: string, password: string) {
     const idToken = await userCredential.user.getIdToken();
     return { user: userCredential.user, idToken, error: null };
   } catch (error: any) {
-    return { user: null, idToken: null, error: error.message };
+    return { user: null, idToken: null, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -37,7 +38,7 @@ export async function signUpWithEmail(email: string, password: string) {
 
     return { user: userCredential.user, idToken, error: null };
   } catch (error: any) {
-    return { user: null, idToken: null, error: error.message };
+    return { user: null, idToken: null, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -51,7 +52,7 @@ export async function signInWithGoogle() {
     const idToken = await userCredential.user.getIdToken();
     return { user: userCredential.user, idToken, error: null };
   } catch (error: any) {
-    return { user: null, idToken: null, error: error.message };
+    return { user: null, idToken: null, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -65,7 +66,7 @@ export async function signInWithGitHub() {
     const idToken = await userCredential.user.getIdToken();
     return { user: userCredential.user, idToken, error: null };
   } catch (error: any) {
-    return { user: null, idToken: null, error: error.message };
+    return { user: null, idToken: null, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -77,7 +78,7 @@ export async function signOut() {
     await firebaseSignOut(auth);
     return { error: null };
   } catch (error: any) {
-    return { error: error.message };
+    return { error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -89,7 +90,7 @@ export async function resetPassword(email: string) {
     await sendPasswordResetEmail(auth, email);
     return { error: null };
   } catch (error: any) {
-    return { error: error.message };
+    return { error: getFirebaseErrorMessage(error) };
   }
 }
 
