@@ -41,7 +41,25 @@ This project includes specialized agent skills for enhanced development workflow
 
 ### Usage
 
-When you ask GitHub Copilot to perform tasks related to these domains, it will automatically utilize the appropriate skill and follow the detailed guidelines defined in `.agents/skills/<skill-name>/SKILL.md`.
+**IMPORTANT**: When working in specific domains, GitHub Copilot MUST first read the corresponding skill file using the `read_file` tool before proceeding:
+
+| When working with...                                                  | Read this skill file                                 |
+| --------------------------------------------------------------------- | ---------------------------------------------------- |
+| Next.js code, server components, route handlers, metadata, async APIs | `.agents/skills/next-best-practices/SKILL.md`        |
+| UI components, pages, layouts, designs, dashboards, styling           | `.agents/skills/frontend-design/SKILL.md`            |
+| Capacitor, mobile builds, iOS/Android deployment                      | `.agents/skills/capacitor-best-practices/SKILL.md`   |
+| React Native, Expo components, mobile development                     | `.agents/skills/vercel-react-native-skills/SKILL.md` |
+| Browser automation, web scraping, screenshots                         | `.agents/skills/browser-use/SKILL.md`                |
+| Finding or installing new skills                                      | `.agents/skills/find-skills/SKILL.md`                |
+
+**Example**: If asked to create a Next.js page, Copilot should:
+
+1. Read `.agents/skills/next-best-practices/SKILL.md`
+2. Read `.agents/skills/frontend-design/SKILL.md` (since it involves UI)
+3. Follow all patterns and rules from both skills
+4. Implement the solution
+
+Multiple skills may apply to a single task - read ALL relevant skill files before starting work.
 
 ## Project Context
 
