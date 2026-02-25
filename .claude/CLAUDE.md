@@ -2,184 +2,131 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router), React 19, TypeScript 5.7
-- **Package Manager**: pnpm (not npm/yarn)
-- **Database**: Prisma ORM 6 + PostgreSQL
-- **Auth**: Firebase Auth (email/password + Google/GitHub OAuth)
-- **Payments**: Stripe (subscriptions with Free/Pro/Enterprise tiers)
-- **UI**: shadcn/ui (new-york style) + Tailwind CSS 3 + Radix UI + Lucide icons
-- **State**: TanStack React Query v5 (client caching), server-side via Prisma
-- **Mobile**: Capacitor 6 (iOS/Android)
-- **Testing**: Vitest (unit/integration) + Playwright (e2e)
-- **Email**: Resend
-- **2FA**: TOTP via otpauth
-
 ## Commands
 
 ```bash
 # Development
-pnpm dev                    # Start dev server (webpack)
-pnpm dev:turbo              # Start dev server (turbo)
-pnpm dev:kill               # Kill stuck dev processes + remove lock files
-pnpm build                  # Production build
+npm run dev              # Start dev server (uses webpack; runs dev-clean.cjs predev hook)
+npm run dev:kill         # Kill stuck dev processes and remove lock files
+npm run build            # Production build
+npm run lint             # ESLint
+npm run typecheck        # TypeScript type check without emitting
 
 # Testing
-pnpm test                   # Run Vitest (all unit/integration)
-pnpm test:watch             # Vitest in watch mode
-pnpm vitest run path/to/file.test.ts  # Run a single test file
-pnpm test:unit              # Unit tests only (src/__tests__/unit)
-pnpm test:integration       # Integration tests only (src/__tests__/integration)
-pnpm test:e2e               # Playwright E2E tests
-pnpm test:e2e:ui            # Playwright with UI
-pnpm test:coverage          # Vitest with coverage (80% thresholds)
-
-# Code Quality
-pnpm lint                   # ESLint
-pnpm typecheck              # TypeScript type checking (tsc --noEmit)
-pnpm format                 # Prettier
+npm run test:unit        # Vitest unit tests only (src/__tests__/unit)
+npm run test:integration # Vitest integration tests (src/__tests__/integration)
+npm run test:e2e         # Playwright E2E tests (requires dev server running)
+npm run test:e2e:ui      # Playwright with interactive UI
+npm run test:coverage    # Vitest with coverage (80% threshold)
+npm run test:all         # All Vitest + Playwright
 
 # Database
-pnpm db:generate            # Generate Prisma client
-pnpm db:push                # Push schema to DB (no migration)
-pnpm db:migrate             # Create and run migration
-pnpm db:studio              # Open Prisma Studio GUI
-pnpm db:seed                # Seed database
+npm run db:generate      # Regenerate Prisma client after schema changes
+npm run db:push          # Push schema to DB without migration (dev)
+npm run db:migrate       # Create and apply migration (production-safe)
+npm run db:studio        # Open Prisma Studio GUI
+npm run db:seed          # Seed database
 
 # Mobile (Capacitor)
-pnpm build:mobile           # Build + cap sync
-pnpm cap:sync               # Sync web assets to native
-pnpm cap:run:ios             # Run on iOS device/sim
-pnpm cap:run:android         # Run on Android device/emulator
+npm run build:mobile     # Build Next.js and sync with Capacitor
+npm run cap:sync         # Sync web assets to native projects
+npm run ios:build        # Build and open in Xcode
+npm run android:build    # Build and open in Android Studio
 ```
 
-## Next.js 16 Proxy (Critical)
+## Next.js 16 Proxy (Middleware Migration) — CRITICAL
 
-Next.js 16 replaced `middleware.ts` with `proxy.ts`:
-- File: **`src/proxy.ts`** (NOT `src/middleware.ts`)
-- Export: **`export async function proxy(request)`** (NOT `middleware`)
-- Build **will fail** if the function is named `middleware`
-- The `config` export and matcher patterns remain the same
+Next.js 16 replaced `middleware.ts` with a proxy convention:
 
-The proxy handles: rate limiting (token bucket), auth redirects, protected route enforcement, email verification checks, admin route guarding, security headers, and CORS.
+- **File**: `src/proxy.ts` (not `src/middleware.ts`)
+- **Export**: `export async function proxy(request: NextRequest)` — must be named `proxy`
 
-## Architecture
+The build will fail with "Proxy is missing expected function export name" if the function is named `middleware`. The `config` export (matcher) and all functionality remain the same.
 
-### Route Groups & Layouts
+## Architecture Overview
 
-The app uses Next.js route groups for layout segmentation:
+### Authentication Flow
 
-- **`src/app/layout.tsx`** — Root layout: ThemeProvider > QueryProvider > ToastProvider, Inter font
-- **`src/app/(auth)/layout.tsx`** — Auth pages (login, signup, reset-password, verify-email): centered card, no nav
-- **`src/app/dashboard/layout.tsx`** — Dashboard: server-side auth check, fetches user data, sticky header with nav, SessionProvider for token refresh
-- **`src/app/(admin)/admin/layout.tsx`** — Admin portal: server-side admin check, sidebar nav with 7 sections
+Firebase handles authentication on both client and server:
 
-### Auth Flow
+1. **Client**: Firebase client SDK (`src/lib/firebase/client.ts`) authenticates the user and returns an ID token.
+2. **Server**: `verifyTokenAction` in `src/app/actions/auth-actions.ts` verifies the token via Firebase Admin SDK, syncs the user to PostgreSQL, records login history, and sets two cookies:
+   - `session` (httpOnly) — Firebase session cookie, 5-day expiry
+   - `email-verified` (readable by proxy) — enforced by `src/proxy.ts` to gate protected routes
+3. **Proxy** (`src/proxy.ts`) — handles route protection, rate limiting, CORS, and security headers at the edge.
 
-1. Firebase handles authentication (client-side SDK in `src/lib/firebase/client.ts`)
-2. On login, Firebase ID token is sent to `/api/auth/login` which sets a `session` cookie
-3. `src/proxy.ts` checks the `session` cookie for protected routes
-4. `SessionProvider` (`src/components/providers/session-provider.tsx`) auto-refreshes tokens every 50 minutes via `onIdTokenChanged`
-5. Server actions use `firebase-admin` (`src/lib/firebase/admin.ts`) to verify tokens
-6. Admin access is checked via `AdminUser` model with role-based permissions (`src/lib/helpers/admin-helpers.ts`)
+Admin role verification cannot be done in the proxy (Firebase token verification requires Node.js runtime). Admin access is verified server-side in each admin API route/page.
+
+### Data Layer
+
+- **Prisma client singleton**: `src/lib/db/client.ts` — import `db` from `@/lib/db/client`
+- **Firebase Admin**: `src/lib/firebase/admin.ts` — import `adminAuth`
+- **Stripe**: `src/lib/stripe/` — lazy-initialized singleton; webhook handler validates signatures via `STRIPE_WEBHOOK_SECRET`
+- **Stripe prices** are fetched from the API and cached for 1 hour using `unstable_cache` in `src/config/subscriptions.ts`
 
 ### Server Actions Pattern
 
-Server actions live in `src/app/actions/` and follow this structure:
-- `auth-actions.ts` — login, signup, logout, session management
-- `user-actions.ts` — profile, settings, 2FA, account deletion
-- `notification-actions.ts` — notification CRUD
-- `subscription-actions.ts` — user subscription management
-- `admin/*.ts` — admin-only actions (users, subscriptions, SEO, settings)
-
-All return `{ success: boolean, error?: string, data?: T }`.
-
-### Stripe Integration
-
-- `src/lib/stripe/client.ts` — Client-side Stripe.js loader
-- `src/lib/stripe/subscriptions.ts` — Checkout sessions, billing portal, subscription CRUD
-- `src/lib/stripe/webhooks.ts` — Webhook verification and event handlers
-- `src/app/api/webhooks/stripe/route.ts` — Webhook endpoint
-- `src/config/subscriptions.ts` — Tier definitions, prices fetched from Stripe and cached via `unstable_cache` (1hr revalidation)
-
-### Key Paths
-
-| Purpose | Path |
-|---------|------|
-| Prisma schema | `prisma/schema.prisma` |
-| DB client (singleton) | `src/lib/db/client.ts` |
-| Zod schemas | `src/lib/utils/validation.ts` |
-| Rate limiter | `src/lib/middleware/rate-limit.ts` |
-| Admin auth helpers | `src/lib/helpers/admin-helpers.ts` |
-| Audit logging | `src/lib/services/audit-log.service.ts` |
-| Site config | `src/config/site.ts` |
-| Subscription tiers | `src/config/subscriptions.ts` |
-| shadcn/ui components | `src/components/ui/` |
-| Test fixtures | `src/__tests__/fixtures/users.ts` |
-| Test utils (RTL wrapper) | `src/__tests__/helpers/test-utils.tsx` |
-
-### Prisma Models
-
-Core: `User` (with Firebase UID, Stripe fields, 2FA), `UserSettings`, `LoginHistory`, `Notification`
-Admin: `AdminUser` (role + JSON permissions), `AuditLog`
-CMS: `SEOMeta`, `URLRedirect`, `AppSettings`, `FeatureFlag`, `EmailTemplate`
-
-All models use `@@map()` for snake_case table names. User is the central model linked via `firebaseUid` and `stripeCustomerId`.
-
-### Testing Structure
-
-```
-src/__tests__/
-  unit/           # Vitest — components, utils
-  integration/    # Vitest — API endpoints
-  e2e/            # Playwright — full user flows
-  fixtures/       # Mock data (users.ts)
-  helpers/        # RTL render wrapper with providers
+All server actions are in `src/app/actions/` and follow this pattern:
+```typescript
+'use server';
+// Returns structured response
+type ActionResponse<T = any> = { success: boolean; data?: T; error?: string };
+// Validate with Zod, call db/services, revalidate cache with revalidatePath()
 ```
 
-Vitest uses jsdom, excludes `**/*.spec.ts` (Playwright files). Coverage targets `src/lib/`, `src/components/`, `src/app/actions/`. Playwright runs against `http://localhost:3000` with auth setup project.
+### Route Structure
+
+```
+src/app/
+├── (auth)/          # login, signup, reset-password, verify-email
+├── (admin)/admin/   # analytics, audit-logs, seo, settings, subscriptions, users
+├── dashboard/       # customer dashboard (protected)
+├── actions/         # all server actions
+├── api/
+│   ├── auth/        # login, logout, signup, clear-session, stripe
+│   └── webhooks/    # Stripe webhook handler (public, no auth)
+└── pricing/         # smart pricing page (adapts to auth state)
+```
+
+### Subscriptions
+
+Three tiers: `free`, `pro`, `enterprise`. Defined in `src/config/subscriptions.ts`. Stripe price IDs come from env vars (`STRIPE_PRICE_ID_PRO_MONTHLY`, etc.). Subscription state is stored on the `User` model alongside `stripeCustomerId` and `stripeSubscriptionId`.
+
+### Logging
+
+Winston logger at `src/lib/logger.ts`. Daily rotating log files in `logs/`. The webpack config excludes `logs/` from file watching to prevent HMR churn.
 
 ### Path Alias
 
-`@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vitest.config.ts`).
+`@/` resolves to `src/`. Used throughout the codebase.
 
-## Code Conventions
+## Key Environment Variables
 
-### Server Components (Default)
-- No `'use client'` directive needed
-- Fetch data directly in components using Prisma or server actions
+```env
+DATABASE_URL                          # PostgreSQL connection string
+NEXT_PUBLIC_FIREBASE_API_KEY          # Firebase client config
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+NEXT_PUBLIC_FIREBASE_PROJECT_ID
+FIREBASE_PROJECT_ID                   # Firebase Admin SDK
+FIREBASE_CLIENT_EMAIL
+FIREBASE_PRIVATE_KEY
+STRIPE_SECRET_KEY
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_ID_PRO_MONTHLY
+STRIPE_PRICE_ID_PRO_YEARLY
+STRIPE_PRICE_ID_ENTERPRISE_MONTHLY
+STRIPE_PRICE_ID_ENTERPRISE_YEARLY
+SENTRY_AUTH_TOKEN                     # Optional; disables source maps if absent
+```
 
-### Client Components
-- Add `'use client'` at top of file
-- Only when using hooks, event handlers, or browser APIs
+## Testing Notes
 
-### Forms
-- React Hook Form + Zod validation
-- Define schemas in `src/lib/utils/validation.ts`
-- Use `@hookform/resolvers` for Zod integration
+- **E2E auth setup**: `src/__tests__/e2e/auth.setup.ts` runs before browser tests. Use `npm run test:setup` to create the test user.
+- **playwright.config.ts** has a stale `pnpm dev` reference in `webServer.command` — the project uses `npm run dev`. Start the dev server manually before running E2E tests locally.
+- Vitest coverage thresholds are 80% for branches, functions, lines, and statements.
+- MSW (`msw`) is available for mocking HTTP in Vitest tests.
 
-### Styling
-- Tailwind CSS with `cn()` utility from `src/lib/utils/cn.ts` (clsx + tailwind-merge)
-- shadcn/ui component config in `components.json` (new-york style, slate base, CSS variables)
-- Dark mode via `next-themes` with class strategy
-- Prettier auto-sorts Tailwind classes (`prettier-plugin-tailwindcss`)
+## Package Manager
 
-### ESLint
-- Extends `next/core-web-vitals` and `next/typescript`
-- Warns on `@typescript-eslint/no-explicit-any` and unused vars
-
-## Agent Skills
-
-**IMPORTANT**: This project has agent skills in `.agents/skills/`. Consult the relevant skill BEFORE working in that domain.
-
-| Skill | When to Use |
-|-------|-------------|
-| **next-best-practices** | ANY Next.js code — RSC boundaries, data patterns, async APIs, metadata, error handling, route handlers |
-| **frontend-design** | Building UI components, pages, layouts, dashboards, styling |
-| **capacitor-best-practices** | Capacitor/mobile code — plugins, performance, deployment |
-| **vercel-react-native-skills** | React Native/Expo components, animations, native modules |
-| **browser-use** | Browser automation — testing, screenshots, form filling |
-| **find-skills** | Discovering or installing new agent skills |
-
-Read `.agents/skills/<skill-name>/SKILL.md` before starting work. When multiple skills apply, read ALL relevant ones.
+This project uses **npm** exclusively. Do not use `pnpm` or `yarn`.
